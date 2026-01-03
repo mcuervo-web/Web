@@ -1135,7 +1135,7 @@
 
                 // Textos Generales
                 "init": "Elige tu destino: Arrastra una Fortaleza para empezar. Mantén el ratón sobre cualquier unidad para Ayuda Visual",
-                "turn_part": "Turno",
+                "turn_part": "Turno:",
                 "deploy_phase": "Fase Despliegue",
                 "dungeon_title": "MAZMORRA",
 
@@ -1243,7 +1243,7 @@
                 "DE NEGRO": "BLACK ARMY",
 
                 "init": "Choose your destiny: Drag a Fortress to start. Hover for Visual Aid.",
-                "turn_part": "Turn",
+                "turn_part": "Turn:",
                 "deploy_phase": "Deployment Phase",
                 "dungeon_title": "DUNGEON",
 
@@ -1348,7 +1348,7 @@
 
                 // Textos Generales
                 "init": "Выберите назначение: Начните с размещения Крепости.",
-                "turn_part": "Ход",
+                "turn_part": "Ход:",
                 "deploy_phase": "Фаза Развертывания",
                 "dungeon_title": "ТЕМНИЦА",
 
@@ -1451,22 +1451,6 @@
                 "fortaleza": "КРЕПОСТЬ", "montana": "ГОРА"
             }
         };
-
-        // Función mágica: Busca el texto español y devuelve el inglés
-        function autoTranslate(text) {
-            if ((currentLang || 'es') === 'es') return text; // Si estamos en español, no hacer nada
-
-            // 1. Búsqueda Inversa: ¿Existe este texto exacto en MESSAGES.es?
-            const esKeys = Object.keys(MESSAGES.es);
-            const foundKey = esKeys.find(key => MESSAGES.es[key] === text);
-
-            if (foundKey) {
-                return MESSAGES.en[foundKey];
-            }
-
-            // Si no lo encuentra (por ejemplo, tiene variables), devuelve el original
-            return text;
-        }
 
         // Función manual (para los casos con variables)
         function t(key, params = {}) {
@@ -3488,13 +3472,7 @@
 
             const bar = document.getElementById('status-bar');
             isNotificationActive = true;
-
-            // --- MAGIA AQUÍ: TRADUCCIÓN AUTOMÁTICA ---
-            // Intentamos traducir el mensaje 'msg'. Si es un texto fijo español, lo cambiará a inglés.
-            // Si ya viene traducido (porque usamos t()), lo dejará igual.
-            bar.innerText = autoTranslate(msg);
-            // -----------------------------------------
-
+            bar.innerText = msg;
             bar.classList.remove('status-critical');
             bar.style.color = isError ? '#e74c3c' : '#f1c40f';
 
