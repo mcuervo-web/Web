@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cotadrez - Interfaz v1.1</title>
+    <style>
+        :root { 
+            --c-red: #e74c3c; 
+            --c-black: #7f8c8d; /* Un gris más claro para el borde negro para que se vea sobre el fondo oscuro */
+            --c-board-l: #f0d9b5; 
+            --c-board-d: #b58863; 
+            --c-water: #3498db;
+            --c-bg: #1a252f;
+            --c-gold: #f1c40f;
+        }
+        body { 
+            background-color: var(--c-bg); 
+            color: white; 
+            font-family: 'Segoe UI', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 10px; 
+            margin: 0; 
+            height: 100vh; 
+            overflow: hidden; 
+            user-select: none; 
+        }
+        
+        /* --- CABECERA --- */
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .game-title {
+            font-size: 3em;
+            margin: 10;
+            letter-spacing: 5px;
+            color: white;
+            text-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            font-weight: 800;
+        }
+        .status-bar {
+            font-size: 1.2em;
+            color: var(--c-gold);
+            margin-top: 2px;
+            font-weight: 500;
+            min-height: 1.5em; /* Para que no salte si está vacío */
+        }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        .main-container { 
+            display: flex; 
+            gap: 20px; 
+            align-items: center; 
+            height: 80vh; /* Ajuste para centrar verticalmente */
+        }
+        
+        /* --- PANELES LATERALES (Inventario + Mazmorra) --- */
+        .panel { 
+            width: 240px; 
+            height: 600px; 
+            background: rgba(0,0,0,0.2); 
+            border: 3px solid #444; 
+            border-radius: 12px; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; /* Para que la mazmorra no se salga de los bordes redondeados */
+        }
+
+        /* Sección Superior: Reserva (Inventario) */
+        .inventory-section {
+            flex: 1; /* Ocupa el espacio restante */
+            padding: 5px;
+            overflow-y: auto;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .inv-list { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 8px; 
+        }
+
+        /* Sección Inferior: Mazmorra */
+        .dungeon-section {
+            height: 180px; /* Tamaño fijo para la mazmorra */
+            background-color: rgba(0, 0, 0, 0.4);
+            box-shadow: inset 0 10px 20px rgba(0,0,0,0.5); /* Efecto de profundidad */
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .dungeon-label {
+            font-size: 0.8em;
+            text-align: center;
+            opacity: 0.5;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .dungeon-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            align-content: flex-start;
+            overflow-y: auto;
+        }
+/* Items del Inventario (Sin recuadro, icono grande) */
+        .inv-item { 
+            width: 70px; height: 70px; 
+            position: relative; 
+            display: flex; justify-content: center; align-items: center;
+            cursor: grab; /* Indicamos que se puede agarrar */
+        }
+        
+        .inv-item img {
+            width: 100%; height: 100%; /* La imagen ocupa todo el hueco */
+            filter: drop-shadow(0 4px 5px rgba(0,0,0,0.5)); /* Sombra para que destaque sobre el fondo */
+            transition: transform 0.1s;
+        }
+
+        .inv-item:active img {
+            transform: scale(0.9); /* Pequeño efecto al hacer clic */
+        }
+
+        /* El contador de unidades (Badge) */
+        .inv-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: var(--c-gold); /* Color dorado para destacar */
+            color: #1a252f;
+            border-radius: 50%;
+            width: 20px; height: 20px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            z-index: 20;
+        }
+        
+        /* --- TABLERO --- */
+        #board { 
+            display: grid; 
+            grid-template-columns: repeat(10, 60px); 
+            grid-template-rows: repeat(10, 60px); 
+            border: 15px solid #34495e; 
+            border-radius: 4px;
+            background-color: #2c3e50; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        
+        /* --- CASILLAS --- */
+        .tile { 
+            width: 60px; height: 60px; 
+            display: flex; align-items: center; justify-content: center; 
+            position: relative;
+            z-index: 1; /* <--- Nivel base de apilamiento */
+            overflow: visible; /* <--- Permite que las piezas sobresalgan sin cortarse */
+        }
+        .light { background-color: var(--c-board-l); }
+        .dark { background-color: var(--c-board-d); }
+        .water { 
+            background-color: var(--c-water) !important; 
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.4); /* Agua con más profundidad */
+        }
+
+/* PIEZAS CUANDO ESTÁN EN EL TABLERO */
+        .piece { 
+            width: 95%;  /* Se ajusta al 90% de los 60px de la casilla */
+            height: 95%; /* Se ajusta al 90% de los 60px de la casilla */
+            z-index: 100; /* <--- IMPORTANTE: Muy alto para estar siempre encima de las casillas */
+            position: relative; /* Necesario para que el z-index funcione bien */
+            cursor: grab; 
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.6)); /* Sombra más pronunciada para dar altura */
+            pointer-events: auto; /* Asegura que reciba los eventos del ratón */
+        }
+
+        .piece:active { cursor: grabbing; transform: scale(1.05); }
+
+// Función auxiliar para mostrar mensajes temporales
+    function showNotification(msg, isError = false) {
+        const bar = document.getElementById('status-bar');
+        bar.innerText = msg;
+        bar.style.color = isError ? '#e74c3c' : '#f1c40f'; // Rojo si es error, Dorado si es info
+        
+        // Efecto visual: parpadeo rápido
+        bar.style.opacity = 0;
+        setTimeout(() => bar.style.opacity = 1, 100);
+
+        // Volver al mensaje por defecto tras 3 segundos
+        if (isError) {
+            setTimeout(() => {
+                bar.innerText = "Modo Dios: Arrastra libremente las piezas al tablero";
+                bar.style.color = '#f1c40f';
+            }, 3000);
+        }
+    }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 class="game-title">COTADREZ</h1>
+        <div id="status-bar" class="status-bar">Elige tu ejército y sitúa en el tablero tu fortaleza</div>
+    </header>
+
+    <div class="main-container">
+        <div class="panel" id="panel-rojo" style="border-color: var(--c-red);">
+            <div class="inventory-section">
+                <div class="inv-list" id="inv-rojo"></div>
+            </div>
+            <div class="dungeon-section">
+                <div class="dungeon-label">Mazmorra</div>
+                <div class="dungeon-list" id="grave-rojo"></div>
+            </div>
+        </div>
+
+        <div id="board"></div>
+
+        <div class="panel" id="panel-negro" style="border-color: var(--c-black);">
+            <div class="inventory-section">
+                <div class="inv-list" id="inv-negro"></div>
+            </div>
+            <div class="dungeon-section">
+                <div class="dungeon-label">Mazmorra</div>
+                <div class="dungeon-list" id="grave-negro"></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // --- 1. CONFIGURACIÓN Y ESTADO ---
+    const CONFIG = {
+        repo: "https://cdn.jsdelivr.net/gh/mcuervo-web/Cotadrez@main",
+        // Definición de cantidades y nombres de archivo
+        pieces: {
+            'fortaleza': { qty: 1, file: 'Castillo.svg' }, 
+            'montana': { qty: 3, file: 'Montana.svg' },
+            'rey': { qty: 1, file: 'Rey.svg' }, 
+            'chusma': { qty: 3, file: 'Chusma.svg' }, 
+            'lanceros': { qty: 3, file: 'Lanza.svg' },
+            'arqueros': { qty: 3, file: 'Arco.svg' }, 
+            'c_ligera': { qty: 3, file: 'CaballeriaL.svg' }, 
+            'c_pesada': { qty: 2, file: 'CaballeriaP.svg' },
+            'elefante': { qty: 2, file: 'Elefante.svg' }, 
+            'escorpion': { qty: 1, file: 'Escorpion.svg' }, 
+            'trabuquete': { qty: 1, file: 'Catapulta.svg' },
+            'dragon': { qty: 1, file: 'Dragon.svg' }
+        }
+    };
+
+    let reserves = { rojo: {}, negro: {} };
+    // Matriz para las PIEZAS (Tropas) - Nombre nuevo para evitar errores
+    let logicBoard = Array(10).fill().map(() => Array(10).fill(null)); 
+
+// Matriz para el TERRENO (Agua) - Esta ya la tenías, déjala igual
+    let terrain = Array(10).fill().map(() => Array(10).fill(null));
+  
+  // Función auxiliar para mostrar mensajes temporales
+    function showNotification(msg, isError = false) {
+        const bar = document.getElementById('status-bar');
+        bar.innerText = msg;
+        bar.style.color = isError ? '#e74c3c' : '#f1c40f'; // Rojo si es error, Dorado si es info
+        
+        // Efecto visual: parpadeo rápido
+        bar.style.opacity = 0;
+        setTimeout(() => bar.style.opacity = 1, 100);
+
+        // Volver al mensaje por defecto tras 3 segundos
+        if (isError) {
+            setTimeout(() => {
+                bar.innerText = "Modo Dios: Arrastra libremente las piezas al tablero";
+                bar.style.color = '#f1c40f';
+            }, 3000);
+        }
+    }
+  
+  
+    // --- 2. INICIALIZACIÓN ---
+    function init() {
+        console.log("Inicializando sistema...");
+        
+        // 1. Llenar las reservas con las cantidades iniciales
+        for (const [type, data] of Object.entries(CONFIG.pieces)) {
+            reserves.rojo[type] = data.qty;
+            reserves.negro[type] = data.qty;
+        }
+
+        // 2. Inicializar gráficos
+        initWater();
+        renderBoard();
+        updateInventories(); // <--- NUEVA LLAMADA
+    }
+    function initWater() {
+        const waterCoords = [[3,1], [1,3]]; // b4, d2
+        waterCoords.forEach(([r,c]) => {
+            terrain[r][c] = 'water'; terrain[r][9-c] = 'water';
+            terrain[9-r][c] = 'water'; terrain[9-r][9-c] = 'water';
+        });
+    }
+
+    // --- 3. RENDERIZADO BÁSICO ---
+function renderBoard() {
+        const b = document.getElementById('board');
+        b.innerHTML = ''; 
+
+        for(let r=0; r<10; r++) {
+            for(let c=0; c<10; c++) {
+                const tile = document.createElement('div');
+                tile.className = `tile ${(r+c)%2===0 ? 'light' : 'dark'}`;
+                tile.dataset.r = r; 
+                tile.dataset.c = c;
+
+                // --- CAMBIO 1: La casilla escucha eventos de soltar ---
+                tile.ondragover = (e) => handleDragOver(e);
+                tile.ondrop = (e) => handleDrop(e, r, c);
+                // ----------------------------------------------------
+
+                if(terrain[r][c] === 'water') {
+                    tile.classList.add('water');
+                }
+
+                // Pintar pieza si existe en la matriz lógica
+                const piece = logicBoard[r][c];
+                if (piece) {
+                    const img = document.createElement('img');
+                    img.src = getImgUrl(piece.army, piece.type);
+                    img.className = 'piece'; // Clase CSS para estilo
+                    
+                    // --- CAMBIO 2: La pieza en tablero también se mueve ---
+                    img.draggable = true;
+                    img.ondragstart = (e) => handleDragStart(e, 'board', piece.army, piece.type, r, c);
+                    // -----------------------------------------------------
+
+                    tile.appendChild(img);
+                }
+
+                b.appendChild(tile);
+            }
+        }
+    }
+
+// Arrancar
+    init();
+
+// Construye la URL de la imagen según el bando y el tipo
+    function getImgUrl(army, type) {
+        const folder = army === 'rojo' ? 'Rojo' : 'Negro';
+        const filename = CONFIG.pieces[type].file;
+        return `${CONFIG.repo}/${folder}/${filename}`;
+    }
+
+// Dibuja las piezas en los paneles laterales
+function updateInventories() {
+        ['rojo', 'negro'].forEach(army => {
+            const list = document.getElementById(`inv-${army}`);
+            list.innerHTML = ''; 
+
+            for (const [type, data] of Object.entries(CONFIG.pieces)) {
+                const count = reserves[army][type];
+                
+                if (count > 0) {
+                    const item = document.createElement('div');
+                    item.className = 'inv-item';
+                    
+                    // --- CAMBIO AQUÍ: Hacemos la imagen arrastrable ---
+                    const img = document.createElement('img');
+                    img.src = getImgUrl(army, type);
+                    img.draggable = true; // Permite arrastrar
+                    
+                    // Conectamos con el handler 'reserve'
+                    img.ondragstart = (e) => handleDragStart(e, 'reserve', army, type);
+                    // ------------------------------------------------
+
+                    item.appendChild(img);
+
+                    if (count > 1) {
+                        const badge = document.createElement('div');
+                        badge.className = 'inv-badge';
+                        badge.innerText = count;
+                        item.appendChild(badge);
+                    }
+                    list.appendChild(item);
+                }
+            }
+        });
+    } 
+
+// --- 4. LÓGICA DE ARRASTRAR Y SOLTAR ---
+
+    // 1. Al empezar a arrastrar (desde Inventario o Tablero)
+    function handleDragStart(e, source, army, type, r = null, c = null) {
+        // Guardamos los datos de la pieza que viaja
+        const data = {
+            source: source, // 'reserve' o 'board'
+            army: army,
+            type: type,
+            originR: r,     // Solo si viene del tablero
+            originC: c      // Solo si viene del tablero
+        };
+        e.dataTransfer.setData('text/plain', JSON.stringify(data));
+        e.dataTransfer.effectAllowed = 'move';
+    }
+
+    // 2. Permitir soltar (El navegador bloquea por defecto, hay que prevenirlo)
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+
+    // 3. Al soltar en una casilla
+function handleDrop(e, r, c) {
+        e.preventDefault();
+        const rawData = e.dataTransfer.getData('text/plain');
+        if (!rawData) return;
+        
+        const data = JSON.parse(rawData);
+        const isFortress = (data.type === 'fortaleza');
+
+        // --- VALIDACIONES PREVIAS ---
+
+        // 1. Definir las casillas afectadas (1 casilla normal o 4 para fortaleza)
+        let cellsToCheck = [];
+        if (isFortress) {
+            // La fortaleza ocupa (r,c), (r,c+1), (r+1,c), (r+1,c+1)
+            // Verificamos que no se salga del tablero
+            if (r + 1 > 9 || c + 1 > 9) {
+                showNotification("¡La fortaleza no cabe ahí! Se sale del mapa.", true);
+                return;
+            }
+            cellsToCheck.push({r: r, c: c});
+            cellsToCheck.push({r: r, c: c+1});
+            cellsToCheck.push({r: r+1, c: c});
+            cellsToCheck.push({r: r+1, c: c+1});
+        } else {
+            // Unidad normal: solo 1 casilla
+            cellsToCheck.push({r: r, c: c});
+        }
+
+        // 2. Comprobar Agua y Ocupación para todas las casillas afectadas
+// 2. Comprobar Agua y Ocupación para todas las casillas afectadas
+        for (let cell of cellsToCheck) {
+            
+            // CORRECCIÓN: Si hay agua Y la pieza NO es una fortaleza, prohibir.
+            // (Es decir, la fortaleza SÍ puede ponerse en agua).
+            if (terrain[cell.r][cell.c] === 'water' && !isFortress) {
+                showNotification("¡No puedes colocar unidades en el AGUA!", true);
+                return; // Cancelar todo el movimiento
+            }
+
+            // Check Ocupado
+            if (logicBoard[cell.r][cell.c] !== null) {
+                showNotification("¡Esa posición está OCUPADA!", true);
+                return;
+            }
+        }
+        // --- EJECUCIÓN DEL MOVIMIENTO ---
+
+        // A. Si viene de la RESERVA
+        if (data.source === 'reserve') {
+            if (reserves[data.army][data.type] > 0) {
+                reserves[data.army][data.type]--; // Restamos 1 unidad del inventario
+                
+                // Colocamos las piezas en el tablero
+                // Si es fortaleza, se escriben 4 "trozos" de fortaleza
+                cellsToCheck.forEach(cell => {
+                    logicBoard[cell.r][cell.c] = { army: data.army, type: data.type };
+                });
+                
+                showNotification(`Has desplegado: ${data.type.toUpperCase()}`);
+            }
+        } 
+        // B. Si viene del TABLERO (Movimiento)
+        else if (data.source === 'board') {
+            // Nota: Mover una fortaleza ya colocada es complejo (habría que borrar 4 y poner 4).
+            // Para este modo Dios, si mueves una pieza del tablero, asumimos que mueves SOLO ese trozo.
+            // Si quieres mover la fortaleza entera una vez puesta, habría que programar lógica de "grupo".
+            // Por ahora, tratamos el movimiento en tablero como 1x1.
+            
+            logicBoard[data.originR][data.originC] = null; // Borrar origen
+            logicBoard[r][c] = { army: data.army, type: data.type }; // Poner destino
+            showNotification("Pieza reubicada");
+        }
+
+        // Actualizar vista
+        renderBoard();
+        updateInventories();
+    }
+  
+</script>
+</body>
+</html>

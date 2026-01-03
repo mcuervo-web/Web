@@ -1,0 +1,1911 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cotadrez</title>
+    <link rel="icon" type="image/svg+xml"
+        href="https://cdn.jsdelivr.net/gh/mcuervo-web/Cotadrez@main/Negro/Castillo.svg">
+    <style>
+        :root {
+            --c-red: #e74c3c;
+            --c-black: #7f8c8d;
+            /* Un gris más claro para el borde negro para que se vea sobre el fondo oscuro */
+            --c-board-l: #f0d9b5;
+            --c-board-d: #b58863;
+            --c-water: #3498db;
+            --c-bg: #1a252f;
+            --c-gold: #f1c40f;
+        }
+
+        body {
+            background-color: var(--c-bg);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* --- CABECERA --- */
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .game-title {
+            font-size: 3em;
+            margin: 10;
+            letter-spacing: 5px;
+            color: white;
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            font-weight: 800;
+        }
+
+        .status-bar {
+            font-size: 1.2em;
+            color: var(--c-gold);
+            margin-top: 2px;
+            font-weight: 500;
+            min-height: 1.5em;
+            /* Para que no salte si está vacío */
+        }
+
+        /* --- ESTADO CRÍTICO (JAQUE / ASEDIO) --- */
+        .status-critical {
+            color: #ff2e2e !important;
+            /* Rojo brillante */
+            font-weight: 800 !important;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+            /* Resplandor rojo */
+            animation: pulse-text 0.8s infinite alternate;
+        }
+
+        @keyframes pulse-text {
+            from {
+                text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+                transform: scale(1);
+            }
+
+            to {
+                text-shadow: 0 0 20px rgba(255, 0, 0, 1);
+                transform: scale(1.02);
+            }
+        }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        .main-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            height: 80vh;
+            /* Ajuste para centrar verticalmente */
+        }
+
+        /* --- PANELES LATERALES (Inventario + Mazmorra) --- */
+        .panel {
+            width: 240px;
+            height: 600px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 3px solid #444;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            /* Para que la mazmorra no se salga de los bordes redondeados */
+        }
+
+        /* Sección Superior: Reserva (Inventario) */
+        .inventory-section {
+            flex: 1;
+            /* Ocupa el espacio restante */
+            padding: 5px;
+            overflow-y: auto;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .inv-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+
+        /* Resaltado del Anillo de Fortaleza */
+        .highlight-ring {
+            box-shadow: inset 0 0 0 3px #2ecc71 !important;
+            /* Borde verde interior */
+            /* background-color: rgba(46, 204, 113, 0.15) !important; */
+            /* Fondo sutil */
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                box-shadow: inset 0 0 0 3px #2ecc71;
+            }
+
+            50% {
+                box-shadow: inset 0 0 0 1px #2ecc71;
+            }
+
+            100% {
+                box-shadow: inset 0 0 0 3px #2ecc71;
+            }
+        }
+
+        /* Feedback de disparo (Arma y Víctimas) - VERSIÓN INTENSA */
+        .shot-highlight {
+            /* Borde interior muy marcado y fondo teñido */
+            box-shadow: inset 0 0 40px rgb(29, 4, 1) !important;
+            /* background-color: rgba(231, 76, 60, 0) !important; */
+            animation: pulse-shot 1.5s infinite;
+            /* Pulso más rápido (latido) */
+            z-index: 5 !important;
+            /* Asegura que se pinte sobre casillas de agua u otras */
+        }
+
+        @keyframes pulse-shot {
+            0% {
+                box-shadow: inset 0 0 40px rgba(27, 4, 2, 0.6);
+                /* background-color: rgba(231, 76, 60, 0); */
+            }
+
+            50% {
+                box-shadow: inset 0 0 60px rgb(29, 4, 1);
+                /* Brillo máximo */
+                /* background-color: rgba(231, 76, 60, 0.1); */
+            }
+
+            100% {
+                box-shadow: inset 0 0 60px rgb(29, 4, 1);
+                /* box-shadow: inset 0 0 40px rgba(231, 76, 60, 0.6); */
+                /* background-color: rgba(231, 76, 60, 0); */
+            }
+        }
+
+        /* Feedback de disparo - ORIGEN (Dorado) */
+        .shot-source {
+            box-shadow: inset 0 0 40px rgba(241, 196, 15, 0.8) !important;
+            /* Gold intenso */
+            animation: pulse-shot-gold 1.5s infinite;
+            z-index: 5 !important;
+        }
+
+        @keyframes pulse-shot-gold {
+            0% {
+                box-shadow: inset 0 0 20px rgba(241, 196, 15, 0.4);
+            }
+
+            50% {
+                box-shadow: inset 0 0 50px rgba(241, 196, 15, 1);
+            }
+
+            100% {
+                box-shadow: inset 0 0 20px rgba(241, 196, 15, 0.4);
+            }
+        }
+
+        /* Sección Inferior: Mazmorra */
+        .dungeon-section {
+            height: 180px;
+            /* Tamaño fijo para la mazmorra */
+            background-color: rgba(0, 0, 0, 0.4);
+            box-shadow: inset 0 10px 20px rgba(0, 0, 0, 0.5);
+            /* Efecto de profundidad */
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dungeon-label {
+            font-size: 0.8em;
+            text-align: center;
+            opacity: 0.5;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dungeon-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            align-content: flex-start;
+            overflow-y: auto;
+        }
+
+        /* Estilo para las piezas dentro de la mazmorra */
+        .dungeon-list img {
+            width: 40px;
+            height: 40px;
+            margin: 2px;
+            filter: grayscale(10%) opacity(0.7);
+            /* Efecto "prisionero" */
+            transition: all 0.3s ease;
+        }
+
+        .dungeon-list img:hover {
+            filter: grayscale(0%) opacity(1);
+            transform: scale(1.2);
+            cursor: help;
+        }
+
+        /* Fichas rescatables: Borde brillante o cursor de mano */
+        .rescue-target {
+            cursor: pointer !important;
+            /* box-shadow: 0 0 5px 2px var(--c-gold); */
+            /* Brillo dorado de esperanza */
+            filter: grayscale(0%) opacity(1) !important;
+            /* Se ven vivas */
+        }
+
+        /* Items del Inventario (Sin recuadro, icono grande) */
+        .inv-item {
+            width: 70px;
+            height: 70px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            /* Indicamos que se puede agarrar */
+        }
+
+        .inv-item img {
+            width: 100%;
+            height: 100%;
+            /* La imagen ocupa todo el hueco */
+            filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.5));
+            /* Sombra para que destaque sobre el fondo */
+            transition: transform 0.1s;
+        }
+
+        .inv-item:active img {
+            transform: scale(0.9);
+            /* Pequeño efecto al hacer clic */
+        }
+
+        /* El contador de unidades (Badge) */
+        .inv-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: var(--c-gold);
+            /* Color dorado para destacar */
+            color: #1a252f;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 20;
+        }
+
+        /* --- TABLERO --- */
+        #board {
+            display: grid;
+            grid-template-columns: repeat(10, 60px);
+            grid-template-rows: repeat(10, 60px);
+            border: 15px solid #34495e;
+            border-radius: 4px;
+            background-color: #2c3e50;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- CASILLAS --- */
+        .tile {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+            /* <--- Nivel base de apilamiento */
+            overflow: visible;
+            /* <--- Permite que las piezas sobresalgan sin cortarse */
+        }
+
+        .light {
+            background-color: var(--c-board-l);
+        }
+
+        .dark {
+            background-color: var(--c-board-d);
+        }
+
+        .water {
+            background-color: var(--c-water) !important;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.4);
+            /* Agua con más profundidad */
+        }
+
+        /* PIEZAS CUANDO ESTÁN EN EL TABLERO */
+        .piece {
+            width: 95%;
+            /* Se ajusta al 90% de los 60px de la casilla */
+            height: 95%;
+            /* Se ajusta al 90% de los 60px de la casilla */
+            z-index: 100;
+            /* <--- IMPORTANTE: Muy alto para estar siempre encima de las casillas */
+            position: relative;
+            /* Necesario para que el z-index funcione bien */
+            cursor: grab;
+            filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.6));
+            /* Sombra más pronunciada para dar altura */
+            pointer-events: auto;
+            /* Asegura que reciba los eventos del ratón */
+        }
+
+        .piece:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+        }
+
+        /* GHOSTING (Feedback Visual) */
+        .ghost-valid {
+            background-color: rgba(46, 204, 113, 0.6) !important;
+            /* Verde */
+            box-shadow: inset 0 0 0 2px #27ae60;
+        }
+
+        .ghost-invalid {
+            background-color: rgba(231, 76, 60, 0.6) !important;
+            /* Rojo */
+            box-shadow: inset 0 0 0 2px #c0392b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1 class="game-title">COTADREZ</h1>
+        <div id="status-bar" class="status-bar">Elige tu ejército y sitúa en el tablero tu fortaleza</div>
+    </header>
+
+    <div class="main-container">
+        <div class="panel" id="panel-rojo" style="border-color: var(--c-red);">
+            <div class="inventory-section">
+                <div class="inv-list" id="inv-rojo"></div>
+            </div>
+            <div class="dungeon-section">
+                <div class="dungeon-label">Mazmorra</div>
+                <div class="dungeon-list" id="grave-rojo"></div>
+            </div>
+        </div>
+
+        <div id="board"></div>
+
+        <div class="panel" id="panel-negro" style="border-color: var(--c-black);">
+            <div class="inventory-section">
+                <div class="inv-list" id="inv-negro"></div>
+            </div>
+            <div class="dungeon-section">
+                <div class="dungeon-label">Mazmorra</div>
+                <div class="dungeon-list" id="grave-negro"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. CONFIGURACIÓN Y ESTADO ---
+        const CONFIG = {
+            repo: "https://cdn.jsdelivr.net/gh/mcuervo-web/Cotadrez@main",
+            // Definición de cantidades y nombres de archivo
+            pieces: {
+                'fortaleza': { qty: 1, file: 'Castillo.svg' },
+                'montana': { qty: 3, file: 'Montana.svg' },
+                'rey': { qty: 1, file: 'Rey.svg' },
+                'chusma': { qty: 3, file: 'Chusma.svg' },
+                'lanceros': { qty: 3, file: 'Lanza.svg' },
+                'arqueros': { qty: 3, file: 'Arco.svg' },
+                'c_ligera': { qty: 3, file: 'CaballeriaL.svg' },
+                'c_pesada': { qty: 2, file: 'CaballeriaP.svg' },
+                'elefante': { qty: 2, file: 'Elefante.svg' },
+                'escorpion': { qty: 1, file: 'Escorpion.svg' },
+                'trabuquete': { qty: 1, file: 'Catapulta.svg' },
+                'dragon': { qty: 1, file: 'Dragon.svg' }
+            }
+        };
+
+        let reserves = { rojo: {}, negro: {} };
+        // Matriz para las PIEZAS (Tropas) - Nombre nuevo para evitar errores
+        let logicBoard = Array(10).fill().map(() => Array(10).fill(null));
+
+        // Matriz para el TERRENO (Agua) - Esta ya la tenías, déjala igual
+        let terrain = Array(10).fill().map(() => Array(10).fill(null));
+
+        let draggingMeta = null; // Guardará qué estamos moviendo
+
+        let fortressPos = { rojo: null, negro: null };
+
+        let chusmaMovedCoords = null; // Guardará {r, c} de la chusma que acaba de mover
+
+        let shotHighlights = []; // Guardará las coordenadas {r,c} del último disparo para mantenerlas visibles
+
+        let besiegedArmy = null; // Guardará 'rojo' o 'negro' durante la resolución del asedio
+
+        let isBesieged = false; // Nueva bandera para el estado de Asedio
+
+        let currentThreatMap = null; // Mapa Defensivo (Dónde me atacan)
+
+        let currentAttackMap = null; // NUEVO: Mapa Ofensivo (Dónde ataco yo)
+
+        let isCheck = false; // Nueva bandera para el estado de Jaque
+
+        // Almacena los prisioneros capturados POR cada jugador
+        let dungeons = { rojo: [], negro: [] };
+
+        // Estado del juego: 'init', 'deploy-p1', 'deploy-p2', 'playing'
+        let gameState = 'init';
+        let p1Color = null;
+        let p2Color = null;
+        let p1Territory = null; // 'north' (filas 0-4) o 'south' (filas 5-9)
+        let turnColor = null; // 'rojo' o 'negro'
+
+        function showNotification(msg, isError = false) {
+            const bar = document.getElementById('status-bar');
+            bar.innerText = msg;
+
+            // Si es error, rojo estándar. Si es info, dorado. 
+            // PERO si estamos en CRÍTICO, mantenemos la clase parpadeante si no es un error momentáneo.
+            bar.classList.remove('status-critical'); // Quitamos parpadeo temporalmente para leer el mensaje
+            bar.style.color = isError ? '#e74c3c' : '#f1c40f';
+
+            bar.style.opacity = 0;
+            setTimeout(() => bar.style.opacity = 1, 100);
+
+            // Al terminar la notificación, volvemos al estado real del juego
+            setTimeout(() => {
+                updateStatusBar(); // <--- ESTA ES LA CLAVE: Restaurar estado crítico si existe
+                bar.style.opacity = 1; // Asegurar visibilidad
+            }, 3000);
+        }
+
+
+        // --- 2. INICIALIZACIÓN ---
+        function init() {
+            console.log("Inicializando sistema...");
+
+            // 1. Llenar las reservas con las cantidades iniciales
+            for (const [type, data] of Object.entries(CONFIG.pieces)) {
+                reserves.rojo[type] = data.qty;
+                reserves.negro[type] = data.qty;
+            }
+
+            // 2. Inicializar gráficos
+            initWater();
+            renderBoard();
+            updateInventories();
+            updateDungeons();
+            document.getElementById('status-bar').innerText = getStatusText();
+        }
+        function initWater() {
+            const waterCoords = [[3, 1], [1, 3]]; // b4, d2
+            waterCoords.forEach(([r, c]) => {
+                terrain[r][c] = 'water'; terrain[r][9 - c] = 'water';
+                terrain[9 - r][c] = 'water'; terrain[9 - r][9 - c] = 'water';
+            });
+        }
+
+        // --- 3. RENDERIZADO BÁSICO ---
+
+        function renderBoard() {
+            const b = document.getElementById('board');
+            b.innerHTML = '';
+
+            // --- COLOR DEL BORDE SEGÚN TURNO ---
+            let borderColor = '#34495e'; // Color neutro por defecto (Azul grisáceo oscuro)
+
+            // Definimos el color oscuro manual para que destaque sobre el neutro
+            const darkBorder = '#111111'; // <--- CORRECCIÓN: Gris casi negro
+
+            if (gameState === 'deploy-p1') {
+                borderColor = (p1Color === 'rojo') ? 'var(--c-red)' : darkBorder;
+            }
+            else if (gameState === 'deploy-p2') {
+                borderColor = (p2Color === 'rojo') ? 'var(--c-red)' : darkBorder;
+            }
+            else if (gameState === 'playing' || gameState === 'siege-resolution') {
+                borderColor = (turnColor === 'rojo') ? 'var(--c-red)' : darkBorder;
+            }
+
+            b.style.borderColor = borderColor;
+            // ------------------------------------------
+
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 10; c++) {
+                    const tile = document.createElement('div');
+                    tile.className = `tile ${(r + c) % 2 === 0 ? 'light' : 'dark'}`;
+                    tile.dataset.r = r;
+                    tile.dataset.c = c;
+
+                    // --- NUEVO: PINTAR RASTRO DE DISPARO (Diferenciando Origen/Destino) ---
+                    const shot = shotHighlights.find(h => h.r === r && h.c === c);
+                    if (shot) {
+                        if (shot.type === 'source') tile.classList.add('shot-source'); // Dorado
+                        else tile.classList.add('shot-highlight'); // Oscuro
+                    }
+
+                    tile.ondragover = (e) => handleDragOver(e, r, c);
+                    tile.ondrop = (e) => handleDrop(e, r, c);
+
+                    if (terrain[r][c] === 'water') {
+                        tile.classList.add('water');
+                    }
+
+                    // Pintar pieza
+                    const piece = logicBoard[r][c];
+                    let isVisible = true;
+
+                    // Niebla de Guerra
+                    if (piece && gameState === 'deploy-p2' && piece.army === p1Color) {
+                        isVisible = false;
+                    }
+
+                    if (piece && isVisible) {
+                        const img = document.createElement('img');
+                        img.src = getImgUrl(piece.army, piece.type);
+                        img.className = 'piece';
+
+                        // --- GESTIÓN DE ARRASTRE Y CLICKS ---
+                        let canDrag = true;
+
+                        // Bloqueos estándar
+                        if (piece.type === 'fortaleza') canDrag = false;
+                        if (gameState.startsWith('playing') && piece.type === 'montana') canDrag = false; // startWith para pillar ambos estados
+                        if (gameState.includes('deploy')) {
+                            const myColor = (gameState === 'deploy-p1') ? p1Color : p2Color;
+                            if (piece.army !== myColor) canDrag = false;
+                        }
+
+                        // LÓGICA ESPECIAL: MEDIO TURNO DE CHUSMA
+                        if (gameState === 'playing-chusma-bonus') {
+                            // Si es la chusma que acabamos de mover -> NO DRAG, SÍ CLICK
+                            if (chusmaMovedCoords && r === chusmaMovedCoords.r && c === chusmaMovedCoords.c) {
+                                canDrag = false;
+                                img.style.cursor = "pointer"; // Dedo para hacer click
+                                img.title = "Click para CEDER EL TURNO";
+                                img.onclick = () => finishChusmaBonusTurn();
+                                // Efecto visual para destacar que está esperando
+                                img.style.filter = "drop-shadow(0 0 5px var(--c-gold)) brightness(1.2)";
+                            }
+                            // El resto de piezas no-chusma se bloquean en handleDragStart, 
+                            // pero visualmente podemos quitarles el drag aquí si quieres pulirlo más.
+                        }
+
+                        // Asignar draggable
+                        img.draggable = canDrag;
+                        if (canDrag) {
+                            img.ondragstart = (e) => handleDragStart(e, 'board', piece.army, piece.type, r, c);
+                            img.style.cursor = "grab";
+                        } else if (!img.onclick) {
+                            // Si no es arrastrable ni tiene onclick especial (como la chusma o fortaleza)
+                            img.style.cursor = "default";
+                        }
+
+                        // --- GESTIÓN DE CLICS DE FORTALEZAS (Mantenemos tu código anterior aquí) ---
+                        if (piece.type === 'fortaleza') {
+                            // ... (Tu código de finishTurnP1 / P2 / Asedio sigue igual) ...
+                            if (gameState === 'deploy-p1' && piece.army === p1Color) {
+                                img.style.cursor = "pointer"; img.onclick = () => finishTurnP1();
+                            } else if (gameState === 'deploy-p2' && piece.army === p2Color) {
+                                img.style.cursor = "pointer"; img.onclick = () => finishTurnP2();
+                            } else if (gameState.startsWith('playing') && piece.army !== turnColor) {
+                                // ... (Lógica de asedio si la tienes implementada) ...
+                            }
+                        }
+
+                        tile.appendChild(img);
+                    }
+
+                    b.appendChild(tile);
+                }
+            }
+        }
+
+        // Devuelve 'north' (filas 0-4) o 'south' (filas 5-9)
+        function getTerritory(r) {
+            return r < 5 ? 'north' : 'south';
+        }
+
+
+
+        // Verifica si una casilla está en el "Anillo de Salida" (perímetro adyacente)
+
+        function isInExitZone(r, c, fOrigin) {
+            if (!fOrigin) return false;
+
+            // La fortaleza ocupa (fr, fc) hasta (fr+1, fc+1)
+            // El anillo va desde (fr-1, fc-1) hasta (fr+2, fc+2)
+            const minR = fOrigin.r - 1;
+            const maxR = fOrigin.r + 2;
+            const minC = fOrigin.c - 1;
+            const maxC = fOrigin.c + 2;
+
+            // 1. Debe estar dentro del rectángulo exterior
+            if (r >= minR && r <= maxR && c >= minC && c <= maxC) {
+                // 2. Pero NO debe ser la propia fortaleza (el hueco central)
+                if (r >= fOrigin.r && r <= fOrigin.r + 1 && c >= fOrigin.c && c <= fOrigin.c + 1) {
+                    return false; // Es la propia estructura
+                }
+                return true; // Es el anillo
+            }
+            return false;
+        }
+
+        // Arrancar
+        init();
+
+        // Construye la URL de la imagen según el bando y el tipo
+        function getImgUrl(army, type) {
+            const folder = army === 'rojo' ? 'Rojo' : 'Negro';
+            const filename = CONFIG.pieces[type].file;
+            return `${CONFIG.repo}/${folder}/${filename}`;
+        }
+
+        // Dibuja las piezas en los paneles laterales
+        function updateInventories() {
+            ['rojo', 'negro'].forEach(army => {
+                const list = document.getElementById(`inv-${army}`);
+                list.innerHTML = '';
+
+                for (const [type, data] of Object.entries(CONFIG.pieces)) {
+                    const count = reserves[army][type];
+
+                    if (count > 0) {
+                        const item = document.createElement('div');
+                        item.className = 'inv-item';
+
+                        // --- CAMBIO AQUÍ: Añadimos ondragend ---
+                        const img = document.createElement('img');
+                        img.src = getImgUrl(army, type);
+                        img.draggable = true;
+
+                        img.ondragstart = (e) => handleDragStart(e, 'reserve', army, type);
+                        // NUEVO: Limpiar al soltar (aunque sea fuera)
+                        img.ondragend = () => clearRingHighlights();
+                        // ----------------------------------------
+
+                        item.appendChild(img);
+
+                        if (count > 1) {
+                            const badge = document.createElement('div');
+                            badge.className = 'inv-badge';
+                            badge.innerText = count;
+                            item.appendChild(badge);
+                        }
+                        list.appendChild(item);
+                    }
+                }
+            });
+        }
+
+        // --- 4. LÓGICA DE ARRASTRAR Y SOLTAR ---
+
+        function handleDragStart(e, source, army, type, r = null, c = null) {
+
+            // --- LÓGICA DE JUEGO Y MEDIO TURNO ---
+            if (gameState === 'playing' || gameState === 'playing-chusma-bonus') {
+
+                if (gameState === 'game-over') { e.preventDefault(); return; }
+                if (army !== turnColor) { e.preventDefault(); return; }
+
+                // RESTRICCIONES DEL MEDIO TURNO (BONUS CHUSMA)
+                if (gameState === 'playing-chusma-bonus') {
+                    // 1. Solo se puede mover otra CHUSMA
+                    if (type !== 'chusma') {
+                        e.preventDefault(); return;
+                    }
+                    // 2. Solo piezas del TABLERO (Reserva bloqueada)
+                    if (source !== 'board') {
+                        e.preventDefault(); return;
+                    }
+                    // 3. NO se puede mover la misma unidad dos veces
+                    if (chusmaMovedCoords && r === chusmaMovedCoords.r && c === chusmaMovedCoords.c) {
+                        e.preventDefault(); return;
+                    }
+                }
+            }
+
+            // CALCULAR MAPAS DE INFLUENCIA
+            const enemy = (army === 'rojo') ? 'negro' : 'rojo';
+
+            currentThreatMap = getThreatMap(enemy); // Para que mi Rey no se suicide
+            currentAttackMap = getThreatMap(army);  // Para coordinar ataques (Elefante)
+
+            // 1. Guardamos metadatos (AÑADIDO: coordenadas de origen)
+            draggingMeta = {
+                type: type,
+                army: army,
+                source: source,
+                originR: r, // <--- NUEVO
+                originC: c  // <--- NUEVO
+            };
+
+            // 2. Datos estándar para el Drop
+            const data = { source, army, type, originR: r, originC: c };
+            e.dataTransfer.setData('text/plain', JSON.stringify(data));
+            e.dataTransfer.effectAllowed = 'move';
+
+            // --- NUEVO: RESALTAR ANILLO SI VIENE DE RESERVA ---
+            // (La lógica está DENTRO de la función, antes de la llave de cierre)
+            if (source === 'reserve' && type !== 'montana') {
+                highlightFortressRing(army);
+            }
+        }
+
+        // 2. Permitir soltar (El navegador bloquea por defecto, hay que prevenirlo)
+        // Función auxiliar para limpiar fantasmas previos
+        function clearGhosts() {
+            document.querySelectorAll('.ghost-valid, .ghost-invalid').forEach(el => {
+                el.classList.remove('ghost-valid', 'ghost-invalid');
+            });
+        }
+
+        // Nueva función DragOver con lógica de visualización
+
+        function handleDragOver(e, r, c) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (!draggingMeta) return;
+            clearGhosts();
+
+            // --- NUEVO: LÓGICA ESPECÍFICA PARA FASE DE JUEGO ---
+            if (gameState === 'playing') {
+                let isValid = true;
+                const target = logicBoard[r][c];
+                const type = draggingMeta.type;
+                const army = draggingMeta.army;
+                const source = draggingMeta.source; // <--- Usamos el dato nuevo
+
+                // 1. RESTRICCIONES DE TERRENO GENERALES
+                if (terrain[r][c] === 'water') isValid = false;
+                if (target && target.type === 'fortaleza') isValid = false;
+                if (target && target.type === 'montana') isValid = false;
+
+                // 2. LOGICA DIFERENCIADA: ¿REFUERZO O MOVIMIENTO?
+                if (source === 'reserve') {
+                    // --- REFUERZO ---
+                    // A. Debe ser en el anillo de mi fortaleza
+                    const fOrigin = fortressPos[army];
+                    if (!isInExitZone(r, c, fOrigin)) isValid = false;
+
+                    // B. La casilla debe estar VACÍA (no puedes reforzar encima de nadie)
+                    if (target !== null) isValid = false;
+
+                } else {
+                    // --- MOVIMIENTO NORMAL (TABLERO -> TABLERO) ---
+
+                    // 1. Validar Geometría (Usa la nueva función)
+                    // Usamos las coordenadas guardadas en draggingMeta
+                    if (!isValidMove(type, draggingMeta.originR, draggingMeta.originC, r, c)) {
+                        isValid = false;
+                    }
+
+                    // 2. Validar Ocupación (Solo si la geometría es válida)
+                    if (isValid && target) {
+                        if (target.army === army) {
+                            if (type !== 'lanceros') isValid = false;
+                        }
+                        // Enemigo = Captura (Válido)
+                    }
+                }
+                // Pintar
+                const className = isValid ? 'ghost-valid' : 'ghost-invalid';
+                const tile = document.querySelector(`.tile[data-r="${r}"][data-c="${c}"]`);
+                if (tile) tile.classList.add(className);
+
+                return;
+            }
+
+            // FASE DE DESPLIEGUE DE TROPAS
+            // 1. DEFINICIÓN DE VARIABLES
+            let isValid = true;
+            const army = draggingMeta.army;
+            const type = draggingMeta.type;
+            const isFortress = (type === 'fortaleza');
+            const isMountain = (type === 'montana');
+
+            // Buscar posición de fortaleza
+            const fOrigin = fortressPos[army];
+            const hasFortress = fOrigin !== null;
+
+            // 2. DEFINIR LAS CELDAS AFECTADAS (Variable 'cells')
+            let cells = [];
+            if (isFortress) {
+                // Verificar límites del mapa para 2x2
+                if (r + 1 > 9 || c + 1 > 9) {
+                    // Si se sale, marcamos la casilla actual como error visual y paramos
+                    const tile = document.querySelector(`.tile[data-r="${r}"][data-c="${c}"]`);
+                    if (tile) tile.classList.add('ghost-invalid');
+                    return;
+                }
+                cells.push({ r: r, c: c }, { r: r, c: c + 1 }, { r: r + 1, c: c }, { r: r + 1, c: c + 1 });
+            } else {
+                // Unidad normal: 1x1
+                cells.push({ r: r, c: c });
+            }
+
+            // --- VALIDACIÓN DE REGLAS ---
+
+            // A. REGLA: FORTALEZA PRIMERO
+            // Si no hay fortaleza puesta y no estoy arrastrando una... ERROR
+            if (!isFortress && !hasFortress) {
+                isValid = false;
+            }
+
+            // B. REGLA: TERRITORIOS (ANTI-SONAR)
+            if (p1Territory) {
+                const rowTerritory = getTerritory(r);
+                // Si soy J1 -> Mi zona. Si soy J2 -> La contraria.
+                const myZone = (army === p1Color) ? p1Territory : (p1Territory === 'north' ? 'south' : 'north');
+
+                if (rowTerritory !== myZone) {
+                    isValid = false;
+                }
+            }
+
+            // C. REGLA: ANILLO DE SALIDA (Solo si ya hay fortaleza y no es la propia fortaleza)
+            if (!isFortress && !isMountain && hasFortress) {
+                // Si isValid ya es false (por territorio), no importa, pero si es true verificamos el anillo
+                if (isValid && !isInExitZone(r, c, fOrigin)) {
+                    isValid = false;
+                }
+            }
+
+            // D. REGLA: ZONA PROHIBIDA DE FORTALEZA (Bordes y Centro)
+            if (isFortress) {
+                const invalidRows = [0, 4, 5, 9];
+                const invalidCols = [0, 9];
+                if (invalidRows.includes(r) || invalidRows.includes(r + 1)) isValid = false;
+                if (invalidCols.includes(c) || invalidCols.includes(c + 1)) isValid = false;
+            }
+
+            // E. REGLA: AGUA Y OCUPACIÓN
+            for (let cell of cells) {
+                // Agua (salvo fortaleza)
+                if (terrain[cell.r][cell.c] === 'water' && !isFortress) isValid = false;
+                // Ocupado
+                if (logicBoard[cell.r][cell.c] !== null) isValid = false;
+            }
+
+            // 3. PINTAR EL RESULTADO
+            const className = isValid ? 'ghost-valid' : 'ghost-invalid';
+            cells.forEach(cell => {
+                const tile = document.querySelector(`.tile[data-r="${cell.r}"][data-c="${cell.c}"]`);
+                if (tile) tile.classList.add(className);
+            });
+        }
+        // 3. Al soltar en una casilla
+
+        function handleDrop(e, r, c) {
+            e.preventDefault();
+            clearRingHighlights();
+            clearGhosts();
+
+            const rawData = e.dataTransfer.getData('text/plain');
+            if (!rawData) return;
+            const data = JSON.parse(rawData);
+            draggingMeta = null;
+
+            // ============================================================
+            //  FASE ESPECIAL: RESOLUCIÓN DE ASEDIO (SACRIFICIO)
+            // ============================================================
+            if (gameState === 'siege-resolution') {
+                if (data.army !== besiegedArmy) return;
+                if (data.source !== 'reserve') {
+                    showNotification("⚠️ Debes sacar una pieza de la RESERVA para romper el asedio.", true); return;
+                }
+
+                const fOrigin = fortressPos[data.army];
+                if (!isInExitZone(r, c, fOrigin)) {
+                    showNotification("🚫 Solo puedes desplegar junto a tu Fortaleza.", true); return;
+                }
+                if (logicBoard[r][c] !== null || terrain[r][c] === 'water') {
+                    showNotification("🚫 Casilla inválida u ocupada.", true); return;
+                }
+
+                // Regla de supervivencia del Rey
+                const myReserve = reserves[data.army];
+                const kingInReserve = myReserve['rey'] > 0;
+                if (kingInReserve && data.type !== 'rey') {
+                    showNotification("👑 ¡El Rey está en peligro! Debes salvar al REY obligatoriamente.", true);
+                    return;
+                }
+
+                // A. Salvar la pieza elegida
+                if (reserves[data.army][data.type] > 0) {
+                    reserves[data.army][data.type]--;
+                    logicBoard[r][c] = { army: data.army, type: data.type };
+                }
+
+                // B. Captura masiva del resto
+                const attackerArmy = (besiegedArmy === 'rojo') ? 'negro' : 'rojo';
+                let capturedCount = 0;
+
+                for (const [type, count] of Object.entries(reserves[data.army])) {
+                    if (count > 0) {
+                        for (let i = 0; i < count; i++) {
+                            dungeons[attackerArmy].push({ type: type, army: besiegedArmy });
+                            capturedCount++;
+                        }
+                        reserves[data.army][type] = 0;
+                    }
+                }
+
+                showNotification(`🔥 Asedio roto. ${capturedCount} unidades capturadas.`);
+                gameState = 'playing';
+                besiegedArmy = null;
+                turnColor = attackerArmy;
+
+                renderBoard();
+                updateInventories();
+                updateDungeons();
+                return;
+            }
+
+            // ============================================================
+            //  FASE 1: MODO JUEGO (NORMAL Y BONUS)
+            // ============================================================
+            if (gameState === 'playing' || gameState === 'playing-chusma-bonus') {
+
+                // --- A. REFUERZOS ---
+                if (data.source === 'reserve') {
+                    const fOrigin = fortressPos[data.army];
+                    if (!isInExitZone(r, c, fOrigin)) {
+                        showNotification("⛔ Los refuerzos solo pueden entrar junto a tu Fortaleza."); return;
+                    }
+                    if (terrain[r][c] === 'water') { showNotification("⛔ No puedes desplegar en el agua."); return; }
+                    if (logicBoard[r][c] !== null) { showNotification("⛔ La zona de despliegue está ocupada."); return; }
+
+                    if (reserves[data.army][data.type] > 0) {
+                        reserves[data.army][data.type]--;
+                        logicBoard[r][c] = { army: data.army, type: data.type };
+                        showNotification(`🆕 Refuerzos: ${data.type.toUpperCase()} entra en batalla.`);
+                    } else {
+                        return;
+                    }
+                }
+
+                // --- B. MOVIMIENTO Y COMBATE (TABLERO A TABLERO) ---
+                else if (data.source === 'board') {
+                    // Limpiamos rastros anteriores al iniciar una nueva acción
+                    shotHighlights = [];
+
+                    const target = logicBoard[r][c];
+
+                    // 1. Validaciones de terreno globales
+                    if (terrain[r][c] === 'water' && data.type !== 'trabuquete' && data.type !== 'escorpion') {
+                        // Nota: Armas pueden disparar SOBRE agua, pero validamos destino después
+                        showNotification("⛔ No puedes moverte al agua."); return;
+                    }
+                    // Validamos agua para movimiento (destino vacío) de armas
+                    if (target === null && terrain[r][c] === 'water') { showNotification("⛔ No puedes moverte al agua."); return; }
+
+                    if (target && target.type === 'montana') { showNotification("⛔ No puedes atravesar montañas."); return; }
+                    if (target && target.type === 'fortaleza') { showNotification("⛔ No puedes ocupar una fortaleza."); return; }
+
+                    // --- NUEVO: AVISO ESPECÍFICO DE ELEFANTE ---
+                    // Si intentamos capturar un elefante sin ser dragón y sin apoyo...
+                    if (target && target.type === 'elefante' && target.army !== data.army && data.type !== 'dragon') {
+                        // Usamos el mapa calculado al inicio del arrastre
+                        if (!currentAttackMap || currentAttackMap[r][c] < 2) {
+                            showNotification("🐘 ¡IMPOSIBLE! Necesitas apoyo (2+ unidades) o un Dragón para cazar al Elefante.");
+                            return; // Cortamos aquí para que no salga el error genérico
+                        }
+                    }
+
+                    // 2. Validación Geométrica
+                    if (!isValidMove(data.type, data.originR, data.originC, r, c)) {
+                        showNotification("⛔ Movimiento o Disparo ilegal"); return;
+                    }
+
+                    let wasCapture = false;
+
+                    if (target) {
+                        // --- INTERACCIÓN CON OTRAS PIEZAS ---
+                        if (target.army === data.army) {
+                            // Aliado -> Solo Lanceros
+                            if (data.type === 'lanceros') {
+                                logicBoard[data.originR][data.originC] = target;
+                                logicBoard[r][c] = { army: data.army, type: data.type };
+                                showNotification("🔄 ¡Maniobra de Lancero!");
+                            } else {
+                                showNotification("⛔ Casilla ocupada por aliado."); return;
+                            }
+                        } else {
+                            // --- ENEMIGO (CAPTURA / DISPARO) ---
+                            wasCapture = true;
+
+                            // A. LÓGICA DE DISPARO (Trabuquete y Escorpión)
+                            // Si son estas armas y atacan, NO SE MUEVEN.
+                            if (data.type === 'trabuquete' || data.type === 'escorpion') {
+
+                                // 1. Registrar coordenadas con TIPO
+                                shotHighlights.push({ r: data.originR, c: data.originC, type: 'source' }); // Arma (Dorado)
+                                shotHighlights.push({ r: r, c: c, type: 'target' }); // Víctima (Oscuro)
+
+                                // 2. Caso Especial ESCORPIÓN (Doble Kill)
+                                if (data.type === 'escorpion') {
+                                    // Recorremos el camino para ver si perforamos a alguien
+                                    const sR = Math.sign(r - data.originR);
+                                    const sC = Math.sign(c - data.originC);
+                                    let cR = data.originR + sR, cC = data.originC + sC;
+
+                                    while (cR !== r || cC !== c) {
+                                        const obs = logicBoard[cR][cC];
+                                        if (obs && obs.army !== data.army) {
+                                            // ¡Enemigo intermedio perforado!
+                                            dungeons[data.army].push({ type: obs.type, army: obs.army });
+                                            logicBoard[cR][cC] = null; // Eliminar del tablero
+                                            shotHighlights.push({ r: cR, c: cC, type: 'target' }); // Víctima intermedia (Oscuro)
+                                        }
+                                        cR += sR; cC += sC;
+                                    }
+                                }
+
+                                // 3. Capturar Objetivo Principal
+                                if (target.type === 'rey') {
+                                    gameState = 'game-over';
+                                    // Visualmente eliminamos al rey pero dejamos el arma en su sitio
+                                    logicBoard[r][c] = null;
+                                    renderBoard();
+
+                                    const winner = data.army === 'rojo' ? 'ROJO' : 'NEGRO';
+                                    const bar = document.getElementById('status-bar');
+                                    bar.innerText = `👑 ¡JAQUE MATE! EL TRABUQUETE/ESCORPIÓN HA ELIMINADO AL REY. VICTORIA ${winner}`;
+                                    bar.style.color = '#2ecc71';
+                                    return;
+                                }
+
+                                dungeons[data.army].push({ type: target.type, army: target.army });
+                                logicBoard[r][c] = null; // La casilla destino queda vacía (muerto)
+                                // NO movemos el arma (logicBoard[origin] no se toca)
+
+                                showNotification("🔥 ¡DISPARO DE ASEDIO! Objetivo eliminado.");
+
+                            } else {
+                                // --- CAPTURA CUERPO A CUERPO (Estándar) ---
+                                // Jaque Mate normal
+                                if (target.type === 'rey') {
+                                    gameState = 'game-over';
+                                    logicBoard[data.originR][data.originC] = null;
+                                    logicBoard[r][c] = { army: data.army, type: data.type };
+                                    renderBoard();
+                                    const winner = data.army === 'rojo' ? 'ROJO' : 'NEGRO';
+                                    const bar = document.getElementById('status-bar');
+                                    bar.innerText = `👑 ¡JAQUE MATE! VICTORIA DEL EJÉRCITO ${winner}`;
+                                    bar.style.color = '#2ecc71';
+                                    return;
+                                }
+
+                                dungeons[data.army].push({ type: target.type, army: target.army });
+                                logicBoard[data.originR][data.originC] = null;
+                                logicBoard[r][c] = { army: data.army, type: data.type };
+                                showNotification("⚔️ ¡CAPTURA! Prisionero a la mazmorra.");
+                            }
+                        }
+                    } else {
+                        // --- MOVIMIENTO A CASILLA VACÍA ---
+                        logicBoard[data.originR][data.originC] = null;
+                        logicBoard[r][c] = { army: data.army, type: data.type };
+                        wasCapture = false;
+                    }
+
+                    // --- C. BONUS CHUSMA (Sigue igual) ---
+                    if (gameState === 'playing' && data.type === 'chusma' && !wasCapture) {
+                        gameState = 'playing-chusma-bonus';
+                        chusmaMovedCoords = { r: r, c: c };
+                        showNotification("⚡ ¡Marcha ligera! Mueve otra Chusma o haz click en esta para terminar.");
+                        renderBoard(); updateInventories(); updateDungeons();
+                        return;
+                    }
+                }
+
+                // Cambio de turno estándar
+                turnColor = (turnColor === 'rojo') ? 'negro' : 'rojo';
+                gameState = 'playing';
+                chusmaMovedCoords = null;
+                showNotification(`Turno ${getArmyName(turnColor)}`);
+                renderBoard(); updateInventories(); updateDungeons();
+                checkTurnStatus();
+                return;
+            }
+
+            // ============================================================
+            //  FASE 2: MODO DESPLIEGUE (SETUP)
+            // ============================================================
+            // ... (Tu código de despliegue original sigue aquí, no hace falta tocarlo si ya funciona)
+            // Simplemente copia y pega tu bloque original de despliegue aquí debajo si lo borraste.
+            // Para ahorrar espacio, asumo que mantienes el bloque 'else if (gameState.includes("deploy"))' o similar
+            // Si en tu código estaba todo junto en handleDrop, asegúrate de mantener la parte de abajo.
+
+            // Como tu handleDrop original tenía la parte de despliegue al final sin 'else', 
+            // asegúrate de que este bloque de abajo esté presente:
+
+            const isFortress = (data.type === 'fortaleza');
+            const isMountain = (data.type === 'montana');
+            const fOrigin = fortressPos[data.army];
+            const hasFortress = fOrigin !== null;
+
+            // ... (Resto de tu lógica de despliegue tal cual la tenías en Cotadrez3.2.html líneas 733 en adelante) ...
+
+            // IMPORTANTE: Dado que he cortado aquí para no hacer el mensaje eterno, 
+            // ASEGÚRATE de copiar la parte de DESPLIEGUE que tenías en tu archivo original 
+            // justo después del bloque 'if (gameState === 'playing' ... ) { ... }' que acabamos de cerrar.
+            // O usa la versión completa que te paso a continuación para evitar líos.
+
+            // -- BLOQUE DE DESPLIEGUE RESUMIDO PARA QUE COPIES Y PEGUES TODO SI QUIERES --
+            // Validaciones
+            if (!isFortress && !hasFortress) { showNotification("🚫 Primero debes construir la FORTALEZA", true); return; }
+
+            if (p1Territory) {
+                const currentZone = getTerritory(r);
+                const myZone = (data.army === p1Color) ? p1Territory : (p1Territory === 'north' ? 'south' : 'north');
+                if (currentZone !== myZone) { showNotification("🚫 Zona Prohibida.", true); return; }
+            }
+
+            if (!isFortress && !isMountain && hasFortress) {
+                if (!isInExitZone(r, c, fOrigin)) { showNotification("🛡️ Despliega junto a la Fortaleza", true); return; }
+            }
+
+            let cellsToCheck = [];
+            if (isFortress) {
+                if (r + 1 > 9 || c + 1 > 9) { showNotification("¡No cabe aquí!", true); return; }
+                cellsToCheck.push({ r: r, c: c }, { r: r, c: c + 1 }, { r: r + 1, c: c }, { r: r + 1, c: c + 1 });
+                const invalidRows = [0, 4, 5, 9]; const invalidCols = [0, 9];
+                if (invalidRows.includes(r) || invalidRows.includes(r + 1) || invalidCols.includes(c) || invalidCols.includes(c + 1)) {
+                    showNotification("🏰 Posición inválida", true); return;
+                }
+            } else {
+                cellsToCheck.push({ r: r, c: c });
+            }
+
+            for (let cell of cellsToCheck) {
+                if (terrain[cell.r][cell.c] === 'water' && !isFortress) { showNotification("🌊 ¡Al agua no!", true); return; }
+                if (logicBoard[cell.r][cell.c] !== null) { showNotification("⛔ Casilla ocupada", true); return; }
+            }
+
+            if (data.source === 'reserve') {
+                if (gameState === 'init') {
+                    if (!isFortress) { showNotification("⚠️ Primero la FORTALEZA.", true); return; }
+                    p1Color = data.army;
+                    p2Color = (p1Color === 'rojo') ? 'negro' : 'rojo';
+                    p1Territory = getTerritory(r);
+                    gameState = 'deploy-p1';
+                }
+                if (gameState === 'deploy-p1' && data.army !== p1Color) { showNotification("⚠️ Turno del JUGADOR 1", true); return; }
+                if (gameState === 'deploy-p2' && data.army !== p2Color) { showNotification("⚠️ Turno del JUGADOR 2", true); return; }
+
+                if (reserves[data.army][data.type] > 0) {
+                    reserves[data.army][data.type]--;
+                    cellsToCheck.forEach(cell => logicBoard[cell.r][cell.c] = { army: data.army, type: data.type });
+
+                    if (isFortress) {
+                        fortressPos[data.army] = { r: r, c: c };
+                        if (gameState === 'deploy-p1') showNotification(`J1: ${p1Color.toUpperCase()} controla el ${p1Territory.toUpperCase()}.`);
+                        else showNotification("🏰 Fortaleza establecida.");
+                    } else {
+                        showNotification(`Desplegado: ${data.type.toUpperCase()}`);
+                    }
+                }
+            } else if (data.source === 'board') {
+                logicBoard[data.originR][data.originC] = null;
+                cellsToCheck.forEach(cell => logicBoard[cell.r][cell.c] = { army: data.army, type: data.type });
+                if (isFortress) fortressPos[data.army] = { r: r, c: c };
+                showNotification("Unidad reubicada");
+            }
+
+            renderBoard();
+            updateInventories();
+        }
+
+
+        function updateDungeons() {
+            ['rojo', 'negro'].forEach(jailerArmy => {
+                const container = document.getElementById(`grave-${jailerArmy}`);
+                if (!container) return;
+                container.innerHTML = '';
+
+                // Conjunto para recordar qué tipos de piezas ya hemos pintado en esta vuelta
+                const drawnTypes = new Set();
+
+                dungeons[jailerArmy].forEach((captive, index) => {
+                    // Si ya hemos dibujado una pieza de este tipo, la saltamos (agrupación visual)
+                    if (drawnTypes.has(captive.type)) return;
+
+                    // Si es nueva, la registramos y la dibujamos
+                    drawnTypes.add(captive.type);
+
+                    const img = document.createElement('img');
+                    img.src = getImgUrl(captive.army, captive.type);
+                    img.title = `Prisionero: ${captive.type.toUpperCase()}`;
+
+                    // LÓGICA DE RESCATE (Solo aplicable a la pieza visible)
+                    if (gameState === 'playing' && captive.army === turnColor && jailerArmy !== turnColor) {
+                        img.classList.add('rescue-target');
+                        // Al hacer click, rescatamos ESTA instancia concreta (index)
+                        img.onclick = () => attemptRescue(jailerArmy, index, captive);
+                        img.title = "CLICK PARA RESCATAR (Requiere tropas en la fortaleza enemiga)";
+                    }
+
+                    container.appendChild(img);
+                });
+            });
+        }
+
+        function finishTurnP1() {
+            // Acción directa, sin preguntas
+            gameState = 'deploy-p2';
+
+            // Feedback visual en la barra de notificaciones
+            showNotification(`✅ Despliegue J1 Finalizado. Turno del JUGADOR 2 (${p2Color.toUpperCase()}).`);
+
+            // Repintar (se aplicará la niebla automáticamente)
+            renderBoard();
+            updateInventories();
+        }
+
+
+        function finishTurnP2() {
+            // Acción directa
+            gameState = 'playing';
+            turnColor = p1Color;
+
+            // Feedback visual
+            showNotification(`¡COMIENZA LA PARTIDA! Turno de ${turnColor.toUpperCase()}`);
+
+            // Repintar (se quita la niebla)
+            renderBoard();
+            updateInventories();
+
+            // --- NUEVO: Verificar si empezamos ya en Jaque ---
+            checkTurnStatus();
+        }
+
+        function attemptRescue(jailerArmy, captiveIndex, captive) {
+            // 1. Identificar al enemigo y su fortaleza
+            const myArmy = turnColor;
+            const enemyFortPos = fortressPos[jailerArmy]; // La fortaleza del carcelero
+
+            if (!enemyFortPos) return; // Seguridad
+
+            // 2. Buscar "El Equipo de Rescate"
+            // (Mis piezas que están en el anillo de salida de la fortaleza enemiga)
+            let rescueTeam = [];
+
+            // Recorremos el tablero buscando mis piezas en zona hostil
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 10; c++) {
+                    const piece = logicBoard[r][c];
+                    if (piece && piece.army === myArmy) {
+                        if (isInExitZone(r, c, enemyFortPos)) {
+                            rescueTeam.push({ r, c, type: piece.type });
+                        }
+                    }
+                }
+            }
+
+            // 3. REGLA: ¿Hay equipo de rescate?
+            if (rescueTeam.length < 2) {
+                showNotification("⛔ Necesitas más tropas rodeando la Fortaleza Enemiga para rescatar.", true);
+                return;
+            }
+
+            // 4. EJECUTAR EL RESCATE (Todo vuelve a la reserva)
+
+            // A. Recuperar al prisionero
+            dungeons[jailerArmy].splice(captiveIndex, 1); // Sacar de mazmorra
+            reserves[myArmy][captive.type]++; // Volver a reserva
+
+            // B. Retirar al equipo de rescate (El coste de la operación)
+            rescueTeam.forEach(soldier => {
+                logicBoard[soldier.r][soldier.c] = null; // Sacar del tablero
+                reserves[myArmy][soldier.type]++; // Volver a reserva
+            });
+
+            // 5. FINALIZAR
+            const msg = `🚁 ¡RESCATE ÉPICO! ${captive.type.toUpperCase()} y ${rescueTeam.length} comandos han regresado a casa.`;
+
+            setTimeout(showNotification(msg), 2000);
+
+            gameState = 'siege-resolution';
+            besiegedArmy = jailerArmy; // El enemigo pasa a estar asediado
+
+            // 2. Le damos el turno para que tome su decisión forzosa
+            turnColor = besiegedArmy;
+
+            // 3. Feedback
+            // EN LUGAR DE showNotification, forzamos el estado crítico YA
+            updateStatusBar();
+
+            renderBoard();
+            updateInventories();
+            updateDungeons();
+        }
+
+        function getStatusText() {
+            if (gameState === 'game-over') return document.getElementById('status-bar').innerText;
+
+            const currentArmy = getArmyName(turnColor);
+
+            // 1. ASEDIO
+            if (gameState === 'siege-resolution') {
+                return `🔥 ¡ASEDIO TOTAL! EL EJÉRCITO ${currentArmy} DEBE SALVAR UNA PIEZA (EL RESTO MORIRÁ).`;
+            }
+
+            // 2. JAQUE
+            if (isCheck) {
+                return `⚠️ ¡JAQUE AL REY ${currentArmy}! DEBES PROTEGERLO. ⚠️`;
+            }
+
+            // 3. BONUS CHUSMA
+            if (gameState === 'playing-chusma-bonus') {
+                return `⚡ BONIFICACIÓN CHUSMA: Mueve otra unidad de Chusma o finaliza el turno.`;
+            }
+
+            // 4. ESTÁNDAR
+            if (gameState === 'init') return "Elige tu destino: Arrastra una Fortaleza para empezar.";
+            if (gameState.includes('deploy')) return `Fase Despliegue: ${(gameState === 'deploy-p1' ? p1Color : p2Color).toUpperCase()}`;
+
+            // Aquí está el cambio principal del turno:
+            if (gameState === 'playing') return `Turno ${currentArmy}`;
+
+            return "Cotadrez";
+        }
+
+        // Pinta el anillo de salida de la fortaleza del ejército indicado
+        function highlightFortressRing(army) {
+            const fPos = fortressPos[army];
+            if (!fPos) return;
+
+            // Recorremos todo el tablero (ineficiente pero seguro y rápido en 10x10)
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 10; c++) {
+                    // Si es zona de salida, está vacía y no es agua
+                    if (isInExitZone(r, c, fPos)) {
+                        if (logicBoard[r][c] === null && terrain[r][c] !== 'water') {
+                            const tile = document.querySelector(`.tile[data-r="${r}"][data-c="${c}"]`);
+                            if (tile) tile.classList.add('highlight-ring');
+                        }
+                    }
+                }
+            }
+        }
+
+        // Limpia el resaltado del anillo
+        function clearRingHighlights() {
+            document.querySelectorAll('.highlight-ring').forEach(el => {
+                el.classList.remove('highlight-ring');
+            });
+        }
+
+        // Valida SOLO la geometría del movimiento (Tablero -> Tablero)
+
+        // Valida SOLO la geometría y el camino del movimiento
+        function isValidMove(type, r1, c1, r2, c2) {
+            const dR = Math.abs(r2 - r1);
+            const dC = Math.abs(c2 - c1);
+
+            // --- 0. REGLA ESPECIAL: CAPTURA DE ELEFANTES ---
+            const myPiece = logicBoard[r1][c1];
+            const target = logicBoard[r2][c2];
+
+            if (myPiece && target && target.type === 'elefante' && target.army !== myPiece.army) {
+                // A. El Dragón es el depredador natural (Captura directa)
+                if (type === 'dragon') {
+                    // Pasa sin restricciones, permitimos que valide la geometría abajo
+                }
+                // B. El resto necesita "Caza en Grupo" (Al menos 2 unidades amenazando)
+                else {
+                    // Si no hay mapa o no hay suficientes atacantes...
+                    if (!currentAttackMap || currentAttackMap[r2][c2] < 2) {
+                        // ¡AVISO AL JUGADOR!
+                        /* showNotification("🐘 ¡IMPOSIBLE! Necesitas apoyo (2+ unidades) o un Dragón para cazar al Elefante."); */
+                        return false;
+                    }
+                }
+            }
+
+            // --- 1. REY (1 casilla alrededor) ---
+            if (type === 'rey') {
+                // NUEVO: No puede moverse a una casilla amenazada (Suicidio)
+                // currentThreatMap se calcula en handleDragStart
+                if (currentThreatMap && currentThreatMap[r2][c2] > 0) {
+                    return false;
+                }
+                return (dR <= 1 && dC <= 1) && (dR + dC > 0);
+            }
+            // --- 2. LANCEROS / CHUSMA ---
+            if (type === 'lanceros' || type === 'chusma') return (dR + dC === 1);
+
+            // --- 3. DRAGÓN ---
+            if (type === 'dragon') {
+                if (!((dR === dC) || (r1 === r2 || c1 === c2))) return false;
+                const sR = Math.sign(r2 - r1), sC = Math.sign(c2 - c1);
+                let cR = r1 + sR, cC = c1 + sC;
+                while (cR !== r2 || cC !== c2) {
+                    const obs = logicBoard[cR][cC];
+                    if (obs && obs.type !== 'montana') return false;
+                    cR += sR; cC += sC;
+                }
+                return true;
+            }
+
+            // --- 4. ARQUEROS ---
+            if (type === 'arqueros') {
+                if (dR !== dC) return false;
+                if (dR === 1) return true;
+                if (dR === 2) {
+                    if (logicBoard[r2][c2] === null) return false; // Solo salta para matar
+                    const midR = (r1 + r2) / 2, midC = (c1 + c2) / 2;
+                    return (logicBoard[midR][midC] === null && terrain[midR][midC] !== 'water');
+                }
+                return false;
+            }
+
+            // --- 5. ELEFANTE ---
+            if (type === 'elefante') {
+                if (r1 !== r2 && c1 !== c2) return false;
+                const sR = Math.sign(r2 - r1), sC = Math.sign(c2 - c1);
+                let cR = r1 + sR, cC = c1 + sC;
+                while (cR !== r2 || cC !== c2) {
+                    if (logicBoard[cR][cC] !== null || terrain[cR][cC] === 'water') return false;
+                    cR += sR; cC += sC;
+                }
+                return true;
+            }
+
+            // --- 6. CABALLERÍA LIGERA ---
+            if (type === 'c_ligera') {
+                if (!((dR === 3 && dC === 1) || (dR === 1 && dC === 3))) return false;
+                const isBlocked = (r, c) => {
+                    if (r < 0 || r > 9 || c < 0 || c > 9) return true;
+                    if (terrain[r][c] === 'water') return true;
+                    const o = logicBoard[r][c];
+                    return (o && (o.type === 'montana' || o.type === 'fortaleza'));
+                };
+                // Ruta A (Corto+Giro)
+                const shorts = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+                for (let [sr, sc] of shorts) {
+                    const cr = r1 + sr, cc = c1 + sc;
+                    if (Math.abs(r2 - cr) === 2 && Math.abs(c2 - cc) === 2) {
+                        if (!isBlocked(cr, cc) && !isBlocked((cr + r2) / 2, (cc + c2) / 2)) return true;
+                    }
+                }
+                // Ruta B (Largo+Giro)
+                const longs = [[2, 2], [2, -2], [-2, 2], [-2, -2]];
+                for (let [lr, lc] of longs) {
+                    const cr = r1 + lr, cc = c1 + lc;
+                    if (Math.abs(r2 - cr) === 1 && Math.abs(c2 - cc) === 1) {
+                        if (!isBlocked((r1 + cr) / 2, (c1 + cc) / 2) && !isBlocked(cr, cc)) return true;
+                    }
+                }
+                return false;
+            }
+
+            // --- 7. CABALLERÍA PESADA ---
+            if (type === 'c_pesada') {
+                if (!((dR === 2 && dC === 1) || (dR === 1 && dC === 2))) return false;
+                const myArmy = logicBoard[r1][c1] ? logicBoard[r1][c1].army : null;
+                const isBlocked = (r, c) => {
+                    if (r < 0 || r > 9 || c < 0 || c > 9) return true;
+                    if (terrain[r][c] === 'water') return true;
+                    const o = logicBoard[r][c];
+                    if (o) {
+                        if (o.type === 'montana' || o.type === 'fortaleza') return true;
+                        if (o.army !== myArmy) return true;
+                    }
+                    return false;
+                };
+                const sR = Math.sign(r2 - r1), sC = Math.sign(c2 - c1);
+                if (dR === 2) return !(isBlocked(r1 + sR, c1) || isBlocked(r2, c1)) || !(isBlocked(r1, c2) || isBlocked(r1 + sR, c2));
+                else return !(isBlocked(r1, c1 + sC) || isBlocked(r1, c2)) || !(isBlocked(r2, c1) || isBlocked(r2, c1 + sC));
+            }
+
+            // --- 8. TRABUQUETE ---
+            if (type === 'trabuquete') {
+                // A. MOVIMIENTO (Destino vacío): Solo Diagonal 1 casilla
+                if (logicBoard[r2][c2] === null) {
+                    return (dR === 1 && dC === 1);
+                }
+                // B. DISPARO (Destino ocupado): Solo Ortogonal
+                if (r1 !== r2 && c1 !== c2) return false;
+
+                // Raycast: Ignora unidades, bloquea montaña/fortaleza
+                const sR = Math.sign(r2 - r1), sC = Math.sign(c2 - c1);
+                let cR = r1 + sR, cC = c1 + sC;
+                while (cR !== r2 || cC !== c2) {
+                    const o = logicBoard[cR][cC];
+                    if (o && (o.type === 'montana' || o.type === 'fortaleza')) return false;
+                    cR += sR; cC += sC;
+                }
+                return true;
+            }
+
+            // --- 9. ESCORPIÓN ---
+            if (type === 'escorpion') {
+                // A. MOVIMIENTO (Destino vacío): Solo Ortogonal 1 casilla
+                if (logicBoard[r2][c2] === null) {
+                    return (dR + dC === 1);
+                }
+                // B. DISPARO (Destino ocupado): Solo Diagonal
+                if (dR !== dC) return false;
+
+                // Raycast complejo (Perforación)
+                const sR = Math.sign(r2 - r1), sC = Math.sign(c2 - c1);
+                let cR = r1 + sR, cC = c1 + sC;
+                let enemiesInPath = 0;
+                let lastEnemyPos = null;
+
+                while (cR !== r2 || cC !== c2) {
+                    const o = logicBoard[cR][cC];
+                    // Bloqueos absolutos
+                    if (o && (o.type === 'montana' || o.type === 'fortaleza')) return false;
+
+                    // Conteo de enemigos en la trayectoria
+                    if (o && o.army !== logicBoard[r1][c1].army) {
+                        enemiesInPath++;
+                        lastEnemyPos = { r: cR, c: cC };
+                    }
+                    // No podemos atravesar aliados
+                    if (o && o.army === logicBoard[r1][c1].army) return false;
+
+                    cR += sR; cC += sC;
+                }
+
+                // Lógica de Perforación
+                if (enemiesInPath === 0) return true; // Disparo directo limpio
+                if (enemiesInPath === 1) {
+                    // Hay uno en medio, ver si cumple condición de "distancia 1 o 2"
+                    // Distancia se mide en huecos vacíos entre unidades.
+                    // Si están pegados (gap 0), distanciaManhattan es 2.
+                    // Si gap es 1, dist es 3. Si gap es 2, dist es 4.
+                    const dist = Math.abs(r2 - lastEnemyPos.r); // Diferencia de filas entre objetivo e intermedio
+                    // dist = 1 (pegados), dist = 2 (1 hueco), dist = 3 (2 huecos)
+                    if (dist >= 1 && dist <= 3) return true; // Aceptamos 0, 1 y 2 huecos de separación
+                }
+
+                return false; // Más de 1 enemigo o distancia incorrecta
+            }
+
+            return true;
+        }
+
+        function finishChusmaBonusTurn() {
+            // Cambiar turno y volver a la normalidad
+            turnColor = (turnColor === 'rojo') ? 'negro' : 'rojo';
+            gameState = 'playing';
+            chusmaMovedCoords = null;
+
+            showNotification(`Turno ${getArmyName(turnColor)}`);
+            renderBoard();
+            updateInventories();
+            checkTurnStatus();
+        }
+
+        // --- SISTEMA DE AMENAZAS (Influence Maps) ---
+
+        // Genera una matriz 10x10 donde cada celda indica cuántas unidades del 'attackingArmy' amenazan esa posición
+        function getThreatMap(attackingArmy) {
+            // 1. Crear matriz vacía de ceros
+            let map = Array(10).fill().map(() => Array(10).fill(0));
+
+            // 2. Recorrer tablero buscando atacantes
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 10; c++) {
+                    const piece = logicBoard[r][c];
+                    if (piece && piece.army === attackingArmy) {
+
+                        // 3. Para cada pieza, verificar qué casillas amenaza
+                        for (let tr = 0; tr < 10; tr++) {
+                            for (let tc = 0; tc < 10; tc++) {
+                                // No se amenaza a sí mismo
+                                if (r === tr && c === tc) continue;
+
+                                // Usamos la función auxiliar de ataque (no de movimiento)
+                                if (canUnitAttack(piece.type, r, c, tr, tc, piece.army)) {
+                                    map[tr][tc]++;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return map;
+        }
+
+        // Verifica si una unidad en (r1,c1) podría atacar/capturar en (r2,c2)
+        // Ignoramos qué hay en el destino (asumimos que es el objetivo)
+        function canUnitAttack(type, r1, c1, r2, c2, army) {
+            const dR = Math.abs(r2 - r1);
+            const dC = Math.abs(c2 - c1);
+
+            // 1. REY, LANCEROS, CHUSMA (Rango 1)
+            // Nota: Asumimos que atacan igual que mueven
+            if (type === 'rey') return (dR <= 1 && dC <= 1);
+            if (type === 'lanceros' || type === 'chusma') return (dR + dC === 1);
+
+            // 2. ARQUEROS (Distancia 1 o 2 con salto limpio)
+            if (type === 'arqueros') {
+                if (dR !== dC) return false;
+                if (dR === 1) return true;
+                if (dR === 2) {
+                    const midR = (r1 + r2) / 2, midC = (c1 + c2) / 2;
+                    // Solo atacamos si el hueco intermedio está vacío/agua (sin obstáculos sólidos)
+                    // Nota: logicBoard[mid] debe ser null para que la flecha pase
+                    return (logicBoard[midR][midC] === null && terrain[midR][midC] !== 'water');
+                }
+                return false;
+            }
+
+            // 3. CABALLERÍA LIGERA (Saltos en L diagonal)
+            if (type === 'c_ligera') {
+                if (!((dR === 3 && dC === 1) || (dR === 1 && dC === 3))) return false;
+                // Reutilizamos lógica de bloqueo de isValidMove (simplificada)
+                const isBlocked = (r, c) => {
+                    if (r < 0 || r > 9 || c < 0 || c > 9) return true;
+                    if (terrain[r][c] === 'water') return true;
+                    const o = logicBoard[r][c];
+                    return (o && (o.type === 'montana' || o.type === 'fortaleza'));
+                };
+                // Check Ruta A
+                const shorts = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+                for (let [sr, sc] of shorts) {
+                    const cr = r1 + sr, cc = c1 + sc;
+                    if (Math.abs(r2 - cr) === 2 && Math.abs(c2 - cc) === 2) {
+                        if (!isBlocked(cr, cc) && !isBlocked((cr + r2) / 2, (cc + c2) / 2)) return true;
+                    }
+                }
+                // Check Ruta B
+                const longs = [[2, 2], [2, -2], [-2, 2], [-2, -2]];
+                for (let [lr, lc] of longs) {
+                    const cr = r1 + lr, cc = c1 + lc;
+                    if (Math.abs(r2 - cr) === 1 && Math.abs(c2 - cc) === 1) {
+                        if (!isBlocked((r1 + cr) / 2, (c1 + cc) / 2) && !isBlocked(cr, cc)) return true;
+                    }
+                }
+                return false;
+            }
+
+            // 4. CABALLERÍA PESADA (Saltos en L ortogonal)
+            if (type === 'c_pesada') {
+                if (!((dR === 2 && dC === 1) || (dR === 1 && dC === 2))) return false;
+                // Bloqueo: Montaña, Fortaleza o ENEMIGO (el amigo deja pasar, el enemigo frena)
+                // Pero para "amenazar" el destino, solo nos importa llegar.
+                const isBlocked = (r, c) => {
+                    if (r < 0 || r > 9 || c < 0 || c > 9) return true;
+                    if (terrain[r][c] === 'water') return true;
+                    const o = logicBoard[r][c];
+                    if (o) {
+                        if (o.type === 'montana' || o.type === 'fortaleza') return true;
+                        if (o.army !== army) return true; // Enemigo bloquea el paso intermedio
+                    }
+                    return false;
+                };
+                const sR = Math.sign(r2 - r1), sC = Math.sign(c2 - c1);
+                if (dR === 2) return !(isBlocked(r1 + sR, c1) || isBlocked(r2, c1)) || !(isBlocked(r1, c2) || isBlocked(r1 + sR, c2));
+                else return !(isBlocked(r1, c1 + sC) || isBlocked(r1, c2)) || !(isBlocked(r2, c1) || isBlocked(r2, c1 + sC));
+            }
+
+            // 5. UNIDADES DE RAYCAST (Dragón, Elefante, Armas)
+            const checkRay = (isOrtho, isDiag, canFly, isWeapon) => {
+                // 1. VALIDACIÓN GEOMÉTRICA (Corregida)
+                const validOrtho = (r1 === r2 || c1 === c2);
+                const validDiag = (dR === dC);
+
+                if (isOrtho && isDiag) {
+                    // Caso Dragón (Reina): Vale cualquiera de los dos
+                    if (!validOrtho && !validDiag) return false;
+                } else if (isOrtho) {
+                    // Caso Elefante / Trabuquete: Solo ortogonal
+                    if (!validOrtho) return false;
+                } else if (isDiag) {
+                    // Caso Escorpión: Solo diagonal
+                    if (!validDiag) return false;
+                }
+
+                // 2. CÁLCULO DE TRAYECTORIA
+                const sR = Math.sign(r2 - r1);
+                const sC = Math.sign(c2 - c1);
+                let cR = r1 + sR, cC = c1 + sC;
+
+                let enemiesInPath = 0;
+                let lastEnemyPos = null;
+
+                while (cR !== r2 || cC !== c2) {
+                    // ... (El resto del bucle while se queda IGUAL que lo tenías) ...
+                    const obs = logicBoard[cR][cC];
+
+                    if (canFly) {
+                        if (obs && obs.type !== 'montana') return false;
+                    } else {
+                        if (terrain[cR][cC] === 'water' && !isWeapon) return false;
+                        if (obs) {
+                            if (obs.type === 'montana' || obs.type === 'fortaleza') return false;
+
+                            if (isWeapon && type === 'escorpion') {
+                                if (obs.army !== army) { enemiesInPath++; lastEnemyPos = { r: cR, c: cC }; }
+                                else return false;
+                            } else if (isWeapon && type === 'trabuquete') {
+                                // Ignora unidades
+                            } else {
+                                return false;
+                            }
+                        }
+                    }
+                    cR += sR; cC += sC;
+                }
+
+                // ... (Lógica final de Escorpión igual) ...
+                if (type === 'escorpion' && enemiesInPath > 0) {
+                    if (enemiesInPath === 1) {
+                        const dist = Math.abs(r2 - lastEnemyPos.r);
+                        return (dist >= 1 && dist <= 3);
+                    }
+                    return false;
+                }
+                return true;
+            };
+
+            if (type === 'dragon') return checkRay(true, true, true, false); // Vuela, Ortho+Diag
+            if (type === 'elefante') return checkRay(true, false, false, false); // Tierra, Ortho
+
+            // -- ARMAS: Solo generan amenaza en su modo de DISPARO --
+            if (type === 'trabuquete') return checkRay(true, false, false, true); // Dispara Ortho
+            if (type === 'escorpion') return checkRay(false, true, false, true); // Dispara Diag
+
+            return false;
+        }
+
+        // Verifica si el jugador del turno actual (turnColor) ha perdido o empatado
+        function checkTurnStatus() {
+            // 1. Calcular mapas
+            const enemy = (turnColor === 'rojo') ? 'negro' : 'rojo';
+            const threatMap = getThreatMap(enemy); // Amenazas contra mí
+            const attackMap = getThreatMap(turnColor); // Mis amenazas (Para ver si puedo matar elefantes)
+
+            // A. BUSCAR AL REY Y CHEQUEAR JAQUE
+            let kingPos = null;
+            let hasPieces = false;
+
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 10; c++) {
+                    const p = logicBoard[r][c];
+                    if (p && p.army === turnColor) {
+                        hasPieces = true;
+                        if (p.type === 'rey') kingPos = { r, c };
+                    }
+                }
+            }
+
+            if (!kingPos) return;
+
+            // 1. Detección de Jaque
+            isCheck = (threatMap[kingPos.r][kingPos.c] > 0);
+
+            // B. NUEVO: DETECCIÓN DE ASEDIO (FORTALEZA RODEADA)
+            isBesieged = false;
+            const myFort = fortressPos[turnColor];
+
+            if (myFort) {
+                let enemiesAtGate = 0;
+                // Revisamos todo el tablero buscando enemigos en MI anillo
+                for (let r = 0; r < 10; r++) {
+                    for (let c = 0; c < 10; c++) {
+                        // Si la casilla es parte de mi anillo de salida
+                        if (isInExitZone(r, c, myFort)) {
+                            const p = logicBoard[r][c];
+                            // Y hay una unidad enemiga
+                            if (p && p.army === enemy) {
+                                enemiesAtGate++;
+                            }
+                        }
+                    }
+                }
+                // Si hay 2 o más, estamos asediados
+                if (enemiesAtGate >= 2) isBesieged = true;
+            }
+
+            // C. ACTUALIZAR INTERFAZ (PRIORIDAD ALERTA)
+            if (isCheck || isBesieged) {
+                updateStatusBar();
+                // Opcional: Sonido de alarma aquí
+            }
+
+            // D. VERIFICAR MOVIMIENTOS LEGALES (MATE / AHOGADO)
+            currentThreatMap = threatMap;
+            currentAttackMap = attackMap; // <--- IMPORTANTE: Actualizar el mapa ofensivo para la simulación
+            let hasMoves = false;
+
+            outerLoop:
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 10; c++) {
+                    const p = logicBoard[r][c];
+                    if (p && p.army === turnColor) {
+                        for (let tr = 0; tr < 10; tr++) {
+                            for (let tc = 0; tc < 10; tc++) {
+                                if (isValidMove(p.type, r, c, tr, tc)) {
+                                    // Validaciones básicas extra (terreno, ocupación propia)
+                                    if (terrain[tr][tc] === 'water' && p.type !== 'trabuquete' && p.type !== 'escorpion') continue;
+                                    const target = logicBoard[tr][tc];
+                                    if (target && target.army === turnColor && p.type !== 'lanceros') continue;
+                                    if (target && (target.type === 'montana' || target.type === 'fortaleza')) continue;
+
+                                    hasMoves = true;
+                                    break outerLoop;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // E. RESOLUCIÓN DE PARTIDA
+            if (!hasMoves) {
+                if (isCheck) {
+                    finishGame(enemy, "POR JAQUE MATE");
+                } else {
+                    finishGame(null, "TABLAS POR REY AHOGADO");
+                }
+            }
+        }
+
+
+        // Helper para terminar partida (si no la tenías ya de mis intentos anteriores)
+        function finishGame(winnerArmy, reason = "") {
+            gameState = 'game-over';
+            const winnerText = winnerArmy ? `VICTORIA DEL EJÉRCITO ${winnerArmy.toUpperCase()}` : "EMPATE";
+            const bar = document.getElementById('status-bar');
+            bar.innerText = `🏁 FIN DE PARTIDA: ${reason}. ${winnerText}`;
+            bar.style.color = winnerArmy ? '#2ecc71' : '#fff';
+            bar.style.fontWeight = 'bold';
+        }
+
+        // Actualiza la barra de estado gestionando prioridades y colores
+        function updateStatusBar() {
+            const bar = document.getElementById('status-bar');
+            const text = getStatusText();
+            bar.innerText = text;
+
+            // AÑADIMOS isBesieged A LA CONDICIÓN DE PÁNICO
+            if (gameState === 'siege-resolution' || isCheck || isBesieged) {
+                bar.classList.add('status-critical');
+            } else {
+                bar.classList.remove('status-critical');
+                if (!bar.style.color || bar.style.color === 'rgb(231, 76, 60)') {
+                    bar.style.color = 'var(--c-gold)';
+                }
+            }
+        }
+
+        // Traduce el color del ejército a su territorio (Norte/Sur)
+        function getArmyName(armyColor) {
+            // Si aún no hemos definido territorios (inicio), devolvemos el color
+            if (!p1Territory) return "DE " + armyColor.toUpperCase();
+
+            const isP1 = (armyColor === p1Color);
+            // Si soy P1 y P1 es Norte -> Norte. Si no -> Sur.
+            const isNorth = isP1 ? (p1Territory === 'north') : (p1Territory === 'south');
+
+            return isNorth ? "DEL NORTE" : "DEL SUR";
+        }
+
+    </script>
+</body>
+
+</html>

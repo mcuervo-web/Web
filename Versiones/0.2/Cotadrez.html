@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cotadrez - Versión Final Despliegue</title>
+    <style>
+        body { background-color: #1a252f; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
+        .game-layout { display: flex; gap: 40px; align-items: flex-start; }
+        
+        /* Paneles */
+        .inventory-panel { width: 150px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; border: 2px solid #34495e; }
+        .list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        /* Tablero */
+        #board { display: grid; grid-template-columns: repeat(10, 55px); grid-template-rows: repeat(10, 55px); border: 8px solid #34495e; background: #2c3e50; }
+        .tile { width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; position: relative; box-sizing: border-box; }
+        .light { background-color: #f0d9b5; }
+        .dark { background-color: #b58863; }
+        .water { background-color: #3498db !important; }
+        
+        /* Feedback Visual */
+        .deploy-zone { box-shadow: inset 0 0 0 3px gold; }
+        .valid-drop { background-color: rgba(46, 204, 113, 0.6) !important; }
+        .invalid-ghost { background-color: rgba(231, 76, 60, 0.7) !important; }
+
+        /* Piezas */
+        .inventory-item { width: 50px; height: 50px; background: #0003; border-radius: 8px; position: relative; cursor: grab; display: flex; justify-content: center; align-items: center; }
+        .inventory-item img { width: 80%; height: 80%; pointer-events: none; }
+        .inventory-item.locked { opacity: 0.1; pointer-events: none; filter: grayscale(1); }
+        .inventory-item.empty { display: none; }
+        .badge { position: absolute; top: -5px; right: -5px; background: red; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; display: flex; justify-content: center; align-items: center; }
+        
+        .piece-on-board { width: 90%; height: 90%; pointer-events: none; transition: opacity 0.3s; }
+        #status-msg { margin-top: 10px; text-align: center; color: #f1c40f; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="game-layout">
+    <div class="inventory-panel" id="inv-rojo"><h3>ROJO</h3><div id="list-rojo" class="list"></div></div>
+    
+    <div id="board-container">
+        <div id="board"></div>
+        <div id="status-msg">Arrastra la Fortaleza para empezar</div>
+    </div>
+    
+    <div class="inventory-panel" id="inv-negro"><h3>NEGRO</h3><div id="list-negro" class="list"></div></div>
+</div>
+
+<script>
+// --- MOTOR DINÁMICO DE ELECCIÓN ---
+const waterCoords = ["1,3", "3,1", "1,6", "3,8", "6,1", "8,3", "6,8", "8,6"];
+let stock = { rojo: {}, negro: {} };
+let fortalezaColocada = { rojo: false, negro: false };
+let zonasDespliegue = { rojo: [], negro: [] };
+let mitadesAsignadas = { rojo: null, negro: null }; // Guardará 'norte' (0-4) o 'sur' (5-9)
+let bandoQueEmpezo = null; 
+let turnoActual = null; 
+let faseJuego = "despliegue";
+
+let draggingPieceId = null;
+let draggingArmy = null;
+
+function init() {
+    CONFIG.piezas.forEach(p => { stock.rojo[p.id] = p.cant; stock.negro[p.id] = p.cant; });
+    createBoard();
+    updateInventories();
+}
+
+function getUrl(bando, archivo) {
+    const carpeta = bando === 'rojo' ? 'Rojo' : 'Negro';
+    return `https://cdn.jsdelivr.net/gh/${CONFIG.user}/${CONFIG.repo}@${CONFIG.branch}/${carpeta}/${archivo}`;
+}
+
+function createBoard() {
+    const b = document.getElementById('board');
+    b.innerHTML = '';
+    for(let r=0; r<10; r++){
+        for(let c=0; c<10; c++){
+            const t = document.createElement('div');
+            t.className = `tile ${(r+c)%2===0?'light':'dark'}`;
+            if(waterCoords.includes(`${r},${c}`)) t.classList.add('water');
+            t.dataset.row = r; t.dataset.col = c;
+            t.addEventListener('dragover', handleDragOver);
+            t.addEventListener('drop', handleDrop);
+            t.addEventListener('contextmenu', handleRemove);
+            t.addEventListener('click', handleFortressClick);
+            b.appendChild(t);
+        }
+    }
+}
+
+function updateInventories() {
+    ['rojo', 'negro'].forEach(army => {
+        const panel = document.getElementById(`inv-${army}`);
+        const list = document.getElementById(`list-${army}`);
+        
+        // Si ya hay un turno, solo mostramos el activo
+        if (turnoActual && turnoActual !== army) { 
+            panel.style.visibility = "hidden"; 
+            return; 
+        }
+        panel.style.visibility = "visible";
+        
+        list.innerHTML = '';
+        CONFIG.piezas.forEach(p => {
+            const n = stock[army][p.id];
+            const locked = !fortalezaColocada[army] && p.id !== "fortaleza";
+            const item = document.createElement('div');
+            item.className = `inventory-item ${n<=0?'empty':''} ${locked?'locked':''}`;
+            item.draggable = n > 0 && !locked;
+            item.innerHTML = `<img src="${getUrl(army, p.archivo)}">${n>1?`<span class="badge">${n}</span>`:''}`;
+            item.ondragstart = () => { draggingPieceId = p.id; draggingArmy = army; };
+            list.appendChild(item);
+        });
+    });
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    if (faseJuego !== "despliegue") return;
+    const p = CONFIG.piezas.find(x => x.id === draggingPieceId);
+    if (!p) return;
+    
+    const r = parseInt(this.dataset.row), c = parseInt(this.dataset.col);
+    const army = draggingArmy;
+    
+    document.querySelectorAll('.tile').forEach(t => t.classList.remove('valid-drop', 'invalid-ghost'));
+
+    let esValido = true;
+    
+    // DETERMINAR LÍMITES SEGÚN ELECCIÓN O LIBERTAD TOTAL SI ES LA PRIMERA
+    let minR, maxR;
+    if (!bandoQueEmpezo) {
+        // Primera pieza del juego: puede ir en cualquier mitad, pero respetando bordes
+        minR = (r < 5) ? 0 : 5;
+        maxR = (r < 5) ? 4 : 9;
+    } else {
+        // Ya hay una mitad elegida, el bando actual debe ir a la suya
+        const mitad = mitadesAsignadas[army];
+        minR = (mitad === 'norte') ? 0 : 5;
+        maxR = (mitad === 'norte') ? 4 : 9;
+    }
+
+    for (let i = 0; i < p.size; i++) {
+        for (let j = 0; j < p.size; j++) {
+            const tr = r + i, tc = c + j;
+            const t = document.querySelector(`[data-row="${tr}"][data-col="${tc}"]`);
+            if (!t || t.children.length > 0) esValido = false;
+            if (!p.ignoraAgua && waterCoords.includes(`${tr},${tc}`)) esValido = false;
+            
+            if (p.id === "fortaleza") {
+                // No bordes, no fronteras
+                if (tr <= minR || tr >= maxR || tc <= 0 || tc >= 9) esValido = false;
+            } else if (p.id === "montana") {
+                if (tr < minR || tr > maxR) esValido = false;
+            } else {
+                if (!zonasDespliegue[army].includes(`${tr},${tc}`)) esValido = false;
+            }
+        }
+    }
+
+    for (let i = 0; i < p.size; i++) {
+        for (let j = 0; j < p.size; j++) {
+            const t = document.querySelector(`[data-row="${r+i}"][data-col="${c+j}"]`);
+            if (t) t.classList.add(esValido ? 'valid-drop' : 'invalid-ghost');
+        }
+    }
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    if (!this.classList.contains('valid-drop')) return;
+    
+    const p = CONFIG.piezas.find(x => x.id === draggingPieceId);
+    const r = parseInt(this.dataset.row), c = parseInt(this.dataset.col);
+    const army = draggingArmy;
+
+    // --- LÓGICA DE ASIGNACIÓN DE MITADES ---
+    if (!bandoQueEmpezo && p.id === "fortaleza") {
+        bandoQueEmpezo = army;
+        turnoActual = army;
+        const mitadElegida = (r < 5) ? 'norte' : 'sur';
+        const otraMitad = (mitadElegida === 'norte') ? 'sur' : 'norte';
+        const otroBando = (army === 'rojo') ? 'negro' : 'rojo';
+        
+        mitadesAsignadas[army] = mitadElegida;
+        mitadesAsignadas[otroBando] = otraMitad;
+    }
+
+    const gId = `g-${Date.now()}`;
+    for (let i = 0; i < p.size; i++) {
+        for (let j = 0; j < p.size; j++) {
+            const t = document.querySelector(`[data-row="${r+i}"][data-col="${c+j}"]`);
+            const img = document.createElement('img');
+            img.src = getUrl(army, p.archivo);
+            img.className = "piece-on-board";
+            img.dataset.army = army; img.dataset.pieceId = p.id; img.dataset.groupId = gId;
+            t.appendChild(img);
+        }
+    }
+
+    if (p.id === "fortaleza") {
+        fortalezaColocada[army] = true;
+        actualizarZonas(r, c, army);
+        document.getElementById('status-msg').innerText = `${army.toUpperCase()} desplegando en el ${mitadesAsignadas[army].toUpperCase()}`;
+    }
+    stock[army][p.id]--;
+    updateInventories();
+}
+
+function handleFortressClick(e) {
+    if (faseJuego !== "despliegue") return;
+    const img = e.currentTarget.querySelector('.piece-on-board');
+    if (!img || img.dataset.pieceId !== 'fortaleza' || img.dataset.army !== turnoActual) return;
+    const army = img.dataset.army;
+
+    if (stock[army].montana > 0 || zonasDespliegue[army].some(coord => {
+        const [r, c] = coord.split(',');
+        const t = document.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+        return t.children.length === 0 && !t.classList.contains('water');
+    })) {
+        alert("Completa el despliegue alrededor de la Fortaleza y las 3 montañas.");
+        return;
+    }
+
+    // FINALIZAR TURNO
+    document.querySelectorAll(`.piece-on-board[data-army="${army}"]`).forEach(i => i.style.opacity = "0");
+    document.querySelectorAll('.tile').forEach(t => t.classList.remove('deploy-zone'));
+
+    const otroBando = (army === 'rojo') ? 'negro' : 'rojo';
+    if (army === bandoQueEmpezo) {
+        turnoActual = otroBando;
+        alert(`Turno del ${otroBando.toUpperCase()}. Despliega en el ${mitadesAsignadas[otroBando].toUpperCase()}`);
+    } else {
+        faseJuego = "combate";
+        turnoActual = bandoQueEmpezo;
+        document.querySelectorAll('.piece-on-board').forEach(i => i.style.opacity = "1");
+        document.getElementById('status-msg').innerText = `¡COMBATE! Turno del ${turnoActual.toUpperCase()}`;
+    }
+    updateInventories();
+}
+
+function handleRemove(e) {
+    e.preventDefault();
+    if (faseJuego !== "despliegue") return;
+    const img = e.currentTarget.querySelector('.piece-on-board');
+    if (!img) return;
+    const army = img.dataset.army, pid = img.dataset.pieceId, gid = img.dataset.groupId;
+    
+    if (pid === 'fortaleza') {
+        fortalezaColocada[army] = false;
+        document.querySelectorAll('.deploy-zone').forEach(t => t.classList.remove('deploy-zone'));
+        // Si borra la fortaleza y era el que empezó, reseteamos la elección de tablero
+        if(army === bandoQueEmpezo) {
+            bandoQueEmpezo = null;
+            turnoActual = null;
+            mitadesAsignadas = { rojo: null, negro: null };
+        }
+    }
+    stock[army][pid]++;
+    document.querySelectorAll(`[data-group-id="${gid}"]`).forEach(el => el.remove());
+    updateInventories();
+}
+
+function actualizarZonas(r, c, army) {
+    const coords = [];
+    const mitad = mitadesAsignadas[army];
+    const minR = (mitad === 'norte') ? 0 : 5, maxR = (mitad === 'norte') ? 4 : 9;
+    
+    for (let i = r - 1; i <= r + 2; i++) {
+        for (let j = c - 1; j <= c + 2; j++) {
+            if (!(i >= r && i <= r + 1 && j >= c && j <= c + 1)) {
+                if (i >= minR && i <= maxR && j >= 0 && j < 10) {
+                    coords.push(`${i},${j}`);
+                    const t = document.querySelector(`[data-row="${i}"][data-col="${j}"]`);
+                    if (t && !t.classList.contains('water')) t.classList.add('deploy-zone');
+                }
+            }
+        }
+    }
+    zonasDespliegue[army] = coords;
+}
+
+init();
+</script>
+</body>
+</html>

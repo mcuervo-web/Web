@@ -1141,7 +1141,7 @@
 
                 // Mensajes de Juego
                 "msg_valid": "Movimiento Válido",
-                "msg_invalid": "Movimiento Ilegal",
+                "msg_invalid": "Movimiento Inválido",
                 "err_check": "⚠️ JAQUE ⚠️",
 
                 // Errores y Notas
@@ -1248,14 +1248,14 @@
                 "dungeon_title": "DUNGEON",
 
                 "msg_valid": "Valid Move",
-                "msg_invalid": "Illegal Move",
+                "msg_invalid": "Invalid Move",
                 "err_check": "⚠️ CHECK ⚠️",
 
                 "water": "WATER 🌊",
                 "fortress": "FORTRESS 🏰",
                 "mountain": "MOUNTAIN 🏔️",
                 "occupied": "OCCUPIED",
-                "limits": "🚫 OUT OF BOUNDS",
+                "limits": "🚫OUT OF BOUNDS",
                 "siege_only": "🔒 You can only move units besieging the fortress.",
                 "deploy_fort": "🚫 Deployment only at Fortress.",
                 "invalid_cell": "🚫 Invalid tile.",
@@ -1833,7 +1833,7 @@
             // --- EASTER EGG: Botón Invisible de Debug ---
             const egg = document.createElement('div');
             egg.className = 'debug-egg';
-            egg.title = "v7.1"; // Pista sutil si dejas el ratón quieto
+            egg.title = "v5.2"; // Pista sutil si dejas el ratón quieto
 
             // Usamos DOBLE CLICK para evitar accidentes durante la partida
             egg.ondblclick = () => activateDebugMode();

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cotadrez - Caballería Pesada Especialista</title>
+    <style>
+        body { background-color: #1a252f; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        .game-layout { display: flex; gap: 30px; align-items: flex-start; margin-top: 20px; }
+        .inventory-panel { width: 175px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border: 2px solid #34495e; min-height: 550px; }
+        .list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        #board { display: grid; grid-template-columns: repeat(10, 55px); grid-template-rows: repeat(10, 55px); border: 8px solid #34495e; background: #2c3e50; }
+        .tile { width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; position: relative; box-sizing: border-box; }
+        .light { background-color: #f0d9b5; }
+        .dark { background-color: #b58863; }
+        .water { background-color: #3498db !important; }
+        .deploy-zone { box-shadow: inset 0 0 0 4px #f1c40f; z-index: 2; }
+        .valid-drop { background-color: rgba(46, 204, 113, 0.6) !important; }
+        .invalid-ghost { background-color: rgba(231, 76, 60, 0.7) !important; }
+        .inventory-item { width: 55px; height: 55px; background: rgba(0,0,0,0.2); border-radius: 8px; position: relative; cursor: grab; display: flex; justify-content: center; align-items: center; }
+        .inventory-item img { width: 85%; height: 85%; pointer-events: none; }
+        .inventory-item.locked { opacity: 0.15; filter: grayscale(1); pointer-events: none; }
+        .badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; display: flex; justify-content: center; align-items: center; font-weight: bold; border: 1px solid white; pointer-events: none; }
+        .piece-on-board { width: 90%; height: 90%; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); cursor: grab; transition: opacity 0.3s; }
+        #status-msg { margin-bottom: 15px; font-size: 1.1em; color: #f1c40f; height: 45px; text-align: center; font-weight: bold; max-width: 650px; line-height: 1.2; }
+        .dungeon { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 15px; min-height: 60px; background: rgba(0,0,0,0.3); border: 1px solid #444; border-radius: 8px; padding: 5px; position: relative; }
+        .dungeon::before { content: "MAZMORRA"; position: absolute; top: -10px; left: 10px; font-size: 10px; background: #1a252f; padding: 0 5px; color: #777; }
+        .dungeon img { width: 26px; height: 26px; filter: sepia(0.4); }
+    </style>
+</head>
+<body>
+
+    <h1>COTADREZ</h1>
+    <div id="status-msg">Cargando...</div>
+
+    <div class="game-layout">
+        <div class="inventory-panel" id="inv-rojo">
+            <h3 style="color:#e74c3c; text-align:center;">ROJO</h3>
+            <div id="list-rojo" class="list"></div>
+            <div class="dungeon" id="dungeon-rojo"></div>
+        </div>
+        <div id="board"></div>
+        <div class="inventory-panel" id="inv-negro">
+            <h3 style="color:#bdc3c7; text-align:center;">NEGRO</h3>
+            <div id="list-negro" class="list"></div>
+            <div class="dungeon" id="dungeon-negro"></div>
+        </div>
+    </div>
+
+<script>
+const CONFIG = {
+    user: "mcuervo-web", repo: "Cotadrez", branch: "main",
+    piezas: [
+        { id: "fortaleza", archivo: "Castillo.svg", cant: 1, size: 2, ignoraAgua: true },
+        { id: "montana", archivo: "Montana.svg", cant: 3, size: 1 },
+        { id: "chusma", archivo: "Chusma.svg", cant: 3, size: 1 },
+        { id: "lanceros", archivo: "Lanza.svg", cant: 3, size: 1 },
+        { id: "arqueros", archivo: "Arco.svg", cant: 3, size: 1 },
+        { id: "c_ligera", archivo: "CaballeriaL.svg", cant: 3, size: 1 },
+        { id: "c_pesada", archivo: "CaballeriaP.svg", cant: 2, size: 1 },
+        { id: "elefante", archivo: "Elefante.svg", cant: 2, size: 1 },
+        { id: "escorpion", archivo: "Escorpion.svg", cant: 1, size: 1 },
+        { id: "trabuquete", archivo: "Catapulta.svg", cant: 1, size: 1 },
+        { id: "dragon", archivo: "Dragon.svg", cant: 1, size: 1, ignoraAgua: true, vuela: true },
+        { id: "rey", archivo: "Rey.svg", cant: 1, size: 1 }
+    ]
+};
+
+const waterCoords = ["1,3", "3,1", "1,6", "3,8", "6,1", "8,3", "6,8", "8,6"];
+let stock = { rojo: {}, negro: {} }, mazmorra = { rojo: [], negro: [] };
+let fortalezaColocada = { rojo: false, negro: false }, zonasDespliegue = { rojo: [], negro: [] };
+let mitadesAsignadas = { rojo: null, negro: null }, bandoQueEmpezo = null;
+let turnoActual = null, faseJuego = "despliegue", msgAsedio = "";
+let draggingPieceId = null, draggingArmy = null, draggingOriginTile = null;
+let chusmasMovidasEsteTurno = 0, ultimaChusmaGid = null;
+
+function init() {
+    CONFIG.piezas.forEach(p => { stock.rojo[p.id] = p.cant; stock.negro[p.id] = p.cant; });
+    createBoard();
+    updateInventories();
+    document.getElementById('status-msg').innerText = "El primer jugador elige color y mitad";
+}
+
+function getUrl(bando, archivo) {
+    const carpeta = (bando === 'rojo') ? 'Rojo' : 'Negro';
+    return `https://cdn.jsdelivr.net/gh/${CONFIG.user}/${CONFIG.repo}@${CONFIG.branch}/${carpeta}/${archivo}`;
+}
+
+function createBoard() {
+    const b = document.getElementById('board');
+    b.innerHTML = '';
+    for(let r=0; r<10; r++){
+        for(let c=0; c<10; c++){
+            const t = document.createElement('div');
+            t.className = `tile ${(r+c)%2===0?'light':'dark'}`;
+            if(waterCoords.includes(`${r},${c}`)) t.classList.add('water');
+            t.dataset.row = r; t.dataset.col = c;
+            t.addEventListener('dragover', handleDragOver);
+            t.addEventListener('drop', handleDrop);
+            t.addEventListener('contextmenu', handleRemove);
+            t.addEventListener('click', handleFortressClick);
+            b.appendChild(t);
+        }
+    }
+}
+
+function updateInventories() {
+    ['rojo', 'negro'].forEach(army => {
+        const panel = document.getElementById(`inv-${army}`);
+        const list = document.getElementById(`list-${army}`);
+        const dung = document.getElementById(`dungeon-${army}`);
+        panel.style.visibility = (turnoActual && turnoActual !== army) ? "hidden" : "visible";
+        list.innerHTML = '';
+        CONFIG.piezas.forEach(p => {
+            const n = stock[army][p.id];
+            if (n <= 0) return;
+            const locked = !fortalezaColocada[army] && p.id !== "fortaleza";
+            const item = document.createElement('div');
+            item.className = `inventory-item ${locked?'locked':''}`;
+            item.draggable = !locked;
+            item.innerHTML = `<img src="${getUrl(army, p.archivo)}">${n>1?`<span class="badge">${n}</span>`:''}`;
+            item.ondragstart = () => { draggingPieceId = p.id; draggingArmy = army; draggingOriginTile = null; };
+            list.appendChild(item);
+        });
+        dung.innerHTML = '';
+        mazmorra[army].forEach(pid => {
+            const enem = (army === 'rojo') ? 'negro' : 'rojo';
+            dung.innerHTML += `<img src="${getUrl(enem, CONFIG.piezas.find(x=>x.id===pid).archivo)}" title="${pid}">`;
+        });
+    });
+}
+
+// Función de detección de obstáculos personalizada para la Pesada
+function isObstacleForHeavy(r, c, myArmy) {
+    if (r < 0 || r > 9 || c < 0 || c > 9) return true;
+    if (waterCoords.includes(`${r},${c}`)) return true;
+    const t = document.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+    if (!t) return true;
+    const img = t.querySelector('.piece-on-board');
+    if (img) {
+        // Estructuras siempre bloquean
+        if (img.dataset.pieceId === 'montana' || img.dataset.pieceId === 'fortaleza') return true;
+        // ENEMIGOS son obstáculos para el camino intermedio de la pesada
+        if (img.dataset.army !== myArmy) return true;
+    }
+    return false;
+}
+
+// Obstáculos comunes (estructuras)
+function isStructuralObstacle(r, c) {
+    if (r < 0 || r > 9 || c < 0 || c > 9) return true;
+    if (waterCoords.includes(`${r},${c}`)) return true;
+    const t = document.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+    const img = t ? t.querySelector('.piece-on-board') : null;
+    return (img && (img.dataset.pieceId === 'montana' || img.dataset.pieceId === 'fortaleza'));
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    if (!draggingPieceId) return;
+    const r = parseInt(this.dataset.row), c = parseInt(this.dataset.col);
+    const p = CONFIG.piezas.find(x => x.id === draggingPieceId);
+    document.querySelectorAll('.tile').forEach(t => t.classList.remove('valid-drop', 'invalid-ghost'));
+    
+    let esValido = true;
+    const targetImg = this.querySelector('.piece-on-board');
+
+    if (faseJuego === "despliegue") {
+        let minR = !bandoQueEmpezo ? (r < 5 ? 0 : 5) : (mitadesAsignadas[draggingArmy] === 'norte' ? 0 : 5);
+        let maxR = !bandoQueEmpezo ? (r < 5 ? 4 : 9) : (mitadesAsignadas[draggingArmy] === 'norte' ? 4 : 9);
+        for (let i = 0; i < p.size; i++) {
+            for (let j = 0; j < p.size; j++) {
+                const tr = r + i, tc = c + j, t = document.querySelector(`[data-row="${tr}"][data-col="${tc}"]`);
+                if (!t || t.children.length > 0 || (!p.ignoraAgua && waterCoords.includes(`${tr},${tc}`))) esValido = false;
+                if (p.id === "fortaleza" && (tr <= minR || tr >= maxR || tc <= 0 || tc >= 9)) esValido = false;
+                else if (p.id === "montana" && (tr < minR || tr > maxR)) esValido = false;
+                else if (p.id !== "fortaleza" && p.id !== "montana" && !zonasDespliegue[draggingArmy].includes(`${tr},${tc}`)) esValido = false;
+            }
+        }
+    } else {
+        if (!draggingOriginTile) { esValido = false; }
+        else {
+            const or = parseInt(draggingOriginTile.dataset.row), oc = parseInt(draggingOriginTile.dataset.col);
+            const dr = Math.abs(r - or), dc = Math.abs(c - oc);
+
+            // Aterrizaje universal
+            if (this.classList.contains('water') && !p.ignoraAgua) esValido = false;
+            else if (targetImg && (targetImg.dataset.pieceId === 'fortaleza' || targetImg.dataset.pieceId === 'montana')) esValido = false;
+            else if (targetImg && targetImg.dataset.army === draggingArmy && draggingPieceId !== "lanceros") esValido = false;
+
+            // Lógica Pesada (L con enemigos como muros)
+            else if (draggingPieceId === "c_pesada") {
+                if ((dr === 2 && dc === 1) || (dr === 1 && dc === 2)) {
+                    let path1B = false, path2B = false;
+                    if (dr === 2) { 
+                        const sR = (r - or) / 2;
+                        path1B = isObstacleForHeavy(or + sR, oc, draggingArmy) || isObstacleForHeavy(or + (sR*2), oc, draggingArmy);
+                        path2B = isObstacleForHeavy(or, c, draggingArmy) || isObstacleForHeavy(or + sR, c, draggingArmy);
+                    } else { 
+                        const sC = (c - oc) / 2;
+                        path1B = isObstacleForHeavy(or, oc + sC, draggingArmy) || isObstacleForHeavy(or, oc + (sC*2), draggingArmy);
+                        path2B = isObstacleForHeavy(r, oc, draggingArmy) || isObstacleForHeavy(r, oc + sC, draggingArmy);
+                    }
+                    if (path1B && path2B) esValido = false;
+                } else if (!(r === or && c === oc)) esValido = false;
+            }
+            // Lógica Ligera (L Diagonal con estructuras como muros)
+            else if (draggingPieceId === "c_ligera") {
+                if ((dr === 3 && dc === 1) || (dr === 1 && dc === 3)) {
+                    const sR = (r - or) > 0 ? 1 : -1, sC = (c - oc) > 0 ? 1 : -1;
+                    let p1B = false, p2B = false;
+                    if (dr === 3) {
+                        p1B = isStructuralObstacle(or + sR, oc + sC) || isStructuralObstacle(or + sR*2, oc + sC*2);
+                        p2B = isStructuralObstacle(or + sR, oc - sC) || isStructuralObstacle(or + sR*2, oc); 
+                    } else {
+                        p1B = isStructuralObstacle(or + sR, oc + sC) || isStructuralObstacle(or + sR*2, oc + sC*2);
+                        p2B = isStructuralObstacle(or - sR, oc + sC) || isStructuralObstacle(or, oc + sC*2);
+                    }
+                    if (p1B && p2B) esValido = false;
+                } else if (!(r === or && c === oc)) esValido = false;
+            }
+            else if (draggingPieceId === "arqueros") {
+                if (dr === dc && dr >= 1 && dr <= 2) {
+                    if (targetImg && targetImg.dataset.army === draggingArmy) esValido = false;
+                    else if (dr === 2) {
+                        const mR = (r+or)/2, mC = (c+oc)/2;
+                        const midT = document.querySelector(`[data-row="${mR}"][data-col="${mC}"]`);
+                        if (midT.querySelector('.piece-on-board') || midT.classList.contains('water')) esValido = false;
+                    }
+                } else if (!(r === or && c === oc)) esValido = false;
+            } 
+            else if (dr + dc === 1) {
+                if (draggingPieceId === "chusma" && chusmasMovidasEsteTurno === 1 && draggingOriginTile.querySelector('img').dataset.groupId === ultimaChusmaGid && (r !== or || c !== oc)) esValido = false;
+                if (chusmasMovidasEsteTurno === 1 && draggingPieceId !== "chusma") esValido = false;
+            }
+            else if (r === or && c === oc) esValido = true;
+            else esValido = false;
+        }
+    }
+
+    for (let i = 0; i < p.size; i++) 
+        for (let j = 0; j < p.size; j++) {
+            const t = document.querySelector(`[data-row="${r + i}"][data-col="${c + j}"]`);
+            if (t) t.classList.add(esValido ? 'valid-drop' : 'invalid-ghost');
+        }
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    if (!this.classList.contains('valid-drop')) return;
+    const r = parseInt(this.dataset.row), c = parseInt(this.dataset.col);
+
+    if (faseJuego === "despliegue") {
+        if (!bandoQueEmpezo && draggingPieceId === "fortaleza") {
+            bandoQueEmpezo = draggingArmy; turnoActual = draggingArmy;
+            mitadesAsignadas[draggingArmy] = (r < 5) ? 'norte' : 'sur';
+            mitadesAsignadas[draggingArmy==='rojo'?'negro':'rojo'] = (r < 5) ? 'sur' : 'norte';
+        }
+        const gId = `g-${Date.now()}`, p = CONFIG.piezas.find(x => x.id === draggingPieceId);
+        for (let i = 0; i < p.size; i++) 
+            for (let j = 0; j < p.size; j++) {
+                const tr = r+i, tc = c+j, t = document.querySelector(`[data-row="${tr}"][data-col="${tc}"]`);
+                t.appendChild(createPieceImg(draggingArmy, draggingPieceId, gId));
+            }
+        if (draggingPieceId === "fortaleza") { fortalezaColocada[draggingArmy] = true; actualizarZonas(r, c, draggingArmy); }
+        stock[draggingArmy][draggingPieceId]--;
+        updateInventories();
+    } else {
+        const targetImg = this.querySelector('.piece-on-board');
+        const myImg = draggingOriginTile.querySelector('.piece-on-board');
+        let captura = false, permuta = false;
+
+        if (targetImg) {
+            if (targetImg.dataset.army !== draggingArmy && targetImg.dataset.pieceId !== 'fortaleza') {
+                mazmorra[draggingArmy].push(targetImg.dataset.pieceId);
+                document.querySelectorAll(`[data-group-id="${targetImg.dataset.groupId}"]`).forEach(el => el.remove());
+                captura = true;
+            } else if (draggingPieceId === "lanceros" && targetImg.dataset.army === draggingArmy) {
+                draggingOriginTile.appendChild(targetImg); permuta = true;
+            }
+        }
+        if (r === parseInt(draggingOriginTile.dataset.row) && c === parseInt(draggingOriginTile.dataset.col)) {
+            if (chusmasMovidasEsteTurno > 0) finalizarTurnoCombate();
+            return;
+        }
+        this.appendChild(myImg);
+        if (captura || permuta || ["lanceros", "arqueros", "c_pesada", "c_ligera"].includes(draggingPieceId)) finalizarTurnoCombate();
+        else if (draggingPieceId === "chusma") {
+            chusmasMovidasEsteTurno++; ultimaChusmaGid = myImg.dataset.groupId;
+            const chT = document.querySelectorAll(`.piece-on-board[data-army="${turnoActual}"][data-piece-id="chusma"]`).length;
+            if (chusmasMovidasEsteTurno >= 2 || chT < 2) finalizarTurnoCombate();
+            else document.getElementById('status-msg').innerText = "1/2 Turno: Mueve otra Chusma.";
+        } else finalizarTurnoCombate();
+    }
+    document.querySelectorAll('.tile').forEach(t => t.classList.remove('valid-drop', 'invalid-ghost'));
+}
+
+function checkAsedio() {
+    msgAsedio = "";
+    ['rojo', 'negro'].forEach(army => {
+        let atacantes = 0;
+        if (zonasDespliegue[army]) {
+            zonasDespliegue[army].forEach(coord => {
+                const [r,c] = coord.split(','), t = document.querySelector(`[data-row="${r}"][data-col="${c}"]`), img = t.querySelector('.piece-on-board');
+                if(img && img.dataset.army !== army) atacantes++;
+            });
+            if (atacantes >= 2) msgAsedio += ` ¡ASEDIO A ${army.toUpperCase()}! `;
+        }
+    });
+}
+
+function createPieceImg(army, pid, gid) {
+    const img = document.createElement('img');
+    img.src = getUrl(army, CONFIG.piezas.find(x=>x.id===pid).archivo);
+    img.className = "piece-on-board";
+    img.dataset.army = army; img.dataset.pieceId = pid; img.dataset.groupId = gid;
+    img.draggable = true;
+    img.ondragstart = (e) => {
+        if (faseJuego === "combate") {
+            if (img.dataset.army !== turnoActual) { e.preventDefault(); return; }
+            if (chusmasMovidasEsteTurno === 1 && img.dataset.pieceId !== "chusma") { e.preventDefault(); return; }
+        }
+        draggingPieceId = img.dataset.pieceId; draggingArmy = img.dataset.army; draggingOriginTile = img.parentElement;
+    };
+    return img;
+}
+
+function finalizarTurnoCombate() {
+    checkAsedio(); chusmasMovidasEsteTurno = 0; ultimaChusmaGid = null;
+    turnoActual = (turnoActual === 'rojo') ? 'negro' : 'rojo';
+    document.getElementById('status-msg').innerText = `Turno del ${turnoActual.toUpperCase()}${msgAsedio}`;
+    updateInventories();
+}
+
+function handleFortressClick(e) {
+    if (faseJuego !== "despliegue") return;
+    const img = e.currentTarget.querySelector('.piece-on-board');
+    if (!img || img.dataset.pieceId !== 'fortaleza' || img.dataset.army !== turnoActual) return;
+    const army = img.dataset.army;
+    if (stock[army].montana > 0 || zonasDespliegue[army].some(coord => {
+        const [r, c] = coord.split(','), t = document.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+        return t.children.length === 0 && !t.classList.contains('water');
+    })) return alert("Completa el despliegue.");
+    document.querySelectorAll(`.piece-on-board[data-army="${army}"]`).forEach(i => i.style.opacity = "0");
+    document.querySelectorAll('.tile').forEach(t => t.classList.remove('deploy-zone'));
+    if (army === bandoQueEmpezo) turnoActual = (army === 'rojo') ? 'negro' : 'rojo';
+    else { faseJuego = "combate"; turnoActual = bandoQueEmpezo; document.querySelectorAll('.piece-on-board').forEach(i => i.style.opacity = "1"); }
+    updateInventories();
+}
+
+function handleRemove(e) {
+    e.preventDefault(); if (faseJuego !== "despliegue") return;
+    const img = e.currentTarget.querySelector('.piece-on-board');
+    if (!img) return;
+    const army = img.dataset.army, pid = img.dataset.pieceId, gid = img.dataset.groupId;
+    if (pid === 'fortaleza') { fortalezaColocada[army] = false; if(army === bandoQueEmpezo) { bandoQueEmpezo = null; turnoActual = null; mitadesAsignadas = { rojo: null, negro: null }; } }
+    stock[army][pid]++;
+    document.querySelectorAll(`[data-group-id="${gid}"]`).forEach(el => el.remove());
+    updateInventories();
+}
+
+function actualizarZonas(r, c, army) {
+    const coords = [], mit = mitadesAsignadas[army], minR = (mit === 'norte') ? 0 : 5, maxR = (mit === 'norte') ? 4 : 9;
+    for (let i = r - 1; i <= r + 2; i++) 
+        for (let j = c - 1; j <= c + 2; j++) 
+            if (!(i >= r && i <= r + 1 && j >= c && j <= c + 1) && i >= minR && i <= maxR && j >= 0 && j < 10) {
+                coords.push(`${i},${j}`);
+                const t = document.querySelector(`[data-row="${i}"][data-col="${j}"]`);
+                if (t && !t.classList.contains('water')) t.classList.add('deploy-zone');
+            }
+    zonasDespliegue[army] = coords;
+}
+
+window.onload = init;
+</script>
+</body>
+</html>

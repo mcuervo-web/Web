@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
@@ -527,42 +527,13 @@
             margin-bottom: 5px;
         }
 
-        /* Inglés por defecto */
+        /* Ocultar inglés por defecto */
         #rules-en {
-            display: block;
-        }
-
-        #rules-es {
             display: none;
         }
 
-        /* Estilo para el Selector de Idioma */
-        .btn-lang {
-            background-color: #2c3e50;
-            /* Fondo oscuro a juego */
-            border: 1px solid #7f8c8d;
-            color: #bdc3c7;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85em;
-            margin-right: 20px;
-            transition: all 0.3s;
-            outline: none;
-            /* Quitar borde azul al seleccionar */
-        }
-
-        .btn-lang:hover,
-        .btn-lang:focus {
-            border-color: var(--c-gold);
-            color: var(--c-gold);
-            box-shadow: 0 0 5px rgba(241, 196, 15, 0.2);
-        }
-
-        /* Opciones internas (Solo se ve al desplegar) */
-        .btn-lang option {
-            background-color: #2c3e50;
-            color: white;
+        #rules-es {
+            display: block;
         }
     </style>
 </head>
@@ -571,8 +542,7 @@
 
     <header>
         <h1 class="game-title">COTADREZ</h1>
-        <div id="status-bar" class="status-bar">Choose your destiny: Drag a Fortress to start. Hover for Visual Aid.
-        </div>
+        <div id="status-bar" class="status-bar">Elige tu ejército y sitúa en el tablero tu fortaleza</div>
     </header>
 
     <div class="main-container">
@@ -581,7 +551,7 @@
                 <div class="inv-list" id="inv-rojo"></div>
             </div>
             <div class="dungeon-section">
-                <div class="dungeon-label">Dungeon</div>
+                <div class="dungeon-label">Mazmorra</div>
                 <div class="dungeon-list" id="grave-rojo"></div>
             </div>
         </div>
@@ -593,27 +563,23 @@
                 <div class="inv-list" id="inv-negro"></div>
             </div>
             <div class="dungeon-section">
-                <div class="dungeon-label">Dungeon</div>
+                <div class="dungeon-label">Mazmorra</div>
                 <div class="dungeon-list" id="grave-negro"></div>
             </div>
         </div>
     </div>
 
     <footer>
-        <button class="btn-rules" onclick="toggleRules()">📜 Rules / Reglamento</button>
+        <button class="btn-rules" onclick="toggleRules()">📜 Reglamento / Rules</button>
     </footer>
 
 
     <div id="rulesModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="rules-title" style="margin:0; color: var(--c-gold);">📜 COTADREZ RULES</h2>
+                <h2 id="rules-title" style="margin:0; color: var(--c-gold);">📜 REGLAMENTO DEL COTADREZ</h2>
                 <div style="display: flex; align-items: center;">
-                    <select id="langSelector" class="btn-lang" onchange="changeLanguage(this.value)">
-                        <option value="en">English</option>
-                        <option value="es">Español</option>
-                        <option value="ru">Русский</option>
-                    </select>
+                    <button id="langToggleBtn" class="btn-lang" onclick="toggleLanguage()">Read in English</button>
                     <span class="close-btn" onclick="toggleRules()">&times;</span>
                 </div>
             </div>
@@ -878,127 +844,6 @@
                         to negotiate the exchange).</li>
                 </ul>
             </div>
-
-            <div id="rules-ru" class="rules-container" style="display: none;">
-                <h3>🎯 ЦЕЛЬ</h3>
-                <p>Цель проста и жестока: <strong>Захватить вражеского 👑 Короля</strong>. Вы можете сделать это через
-                    традиционный
-                    <strong>Мат</strong> на доске или осаждая его 🏰 Крепость, пока он не будет вынужден выйти и
-                    погибнуть.
-                </p>
-                <h3>0. СИСТЕМА ПОМОЩИ</h3>
-                <ol>
-                    <li>Наведите курсор на любую фигуру на <strong>1 секунду</strong>, чтобы активировать Визуальную
-                        Помощь.
-                        В строке уведомлений (под заголовком) появится ряд иконок, напоминающих, как ходить,
-                        какие препятствия учитывать и каковы особые характеристики фигуры.</li>
-                    <li>Если удерживать курсор <strong>3 секунды</strong>, активируется помощь на доске,
-                        показывающая доступные и заблокированные клетки.</li>
-                </ol>
-
-                <h3>1. ФАЗА РАЗВЕРТЫВАНИЯ (Туман Войны)</h3>
-                <ol>
-                    <li><strong>🏰 Крепость:</strong> Вы должны 🏗️ начать с её строительства: выберите свою 🚩
-                        Территорию
-                        (Север или Юг) и свои цвета. Ни одна фигура не может ⛔ пройти сквозь неё. Это
-                        единственная фигура, которую можно ставить на 🌊 Воду. Если вы еще не развернули войска,
-                        можете вернуть её в Резерв, нажав на неё. Во время игры она не двигается (➡️:⛔).</li>
-                    <li><strong>🪖 Войска (🤝 Союзники или 🧨 Враги):</strong> Перетащите фигуры из
-                        Резерва в <strong>Кольцо Выхода</strong> (12 клеток вокруг вашей 🏰 Крепости). Если хотите
-                        вернуть фигуру в Резерв на этом этапе, перетащите её за пределы Кольца.</li>
-                    <li><strong>🏔️ Горы:</strong> Можно 🏗️ разместить в любом месте вашей 🚩 Территории.
-                        Только 🐉 Драконы могут летать над ними. Во время игры они не двигаются (➡️:⛔).</li>
-                    <li><strong>Конец хода:</strong> Чтобы завершить развертывание армии, нажмите на свою Крепость.
-                        Учтите, что нельзя закончить ход, пока не размещены все 🏔️ Горы и хотя бы одна фигура.</li>
-                    <li><strong>К бою!:</strong> Игрок 2 развертывается "вслепую": по завершении хода Игрока 1
-                        его армия скрывается, чтобы Игрок 2 не имел преимущества.</li>
-                </ol>
-
-                <h3>2. ДВИЖЕНИЕ И БОЙ</h3>
-                <p>Ходы по очереди, рамка доски указывает цвет активной армии. За один ход можно переместиться,
-                    выстрелить или вывести фигуру из Резерва.
-                </p>
-                <p>Захваченные фигуры попадают в <strong>Темницу</strong> врага. Вы сможете спасти их позже,
-                    осаждая вражескую 🏰 Крепость (СМ. 3. МЕХАНИКА ОСАДЫ).
-                </p>
-
-                <h4>🛡️ Базовые Фигуры</h4>
-                <ul>
-                    <li><strong>👑 Король:</strong> Ходит на 1 клетку в любом направлении (⬆️:1✖️➕). Это
-                        <strong>"КЛЮЧЕВАЯ"</strong> фигура: если её захватят, игра окончена.
-                        Не может ходить на клетки под ⚠️ Угрозой или заблокированные (⛔:🤝🏰🏔️🌊⚠️).
-                    </li>
-                    <li><strong>🏚️ Чернь:</strong> Ходит на 1 клетку ортогонально (⬆️:1➕). Не ходит на заблокированные
-                        клетки (⛔:🤝🏰🏔️🌊). <strong>ЭКСТРА: "Марш-бросок (⚡:+1🏚️)":</strong> Переместите 2
-                        разных отряда черни за один ход. Вы можете отказаться от бонуса, нажав на только что
-                        перемещенную фигуру.</li>
-                    <li><strong>🔱 Копейщик:</strong> Ходит на 1 клетку ортогонально (⬆️:1➕). Не ходит на
-                        заблокированные
-                        клетки (⛔:🏰🏔️🌊). <strong>ЭКСТРА: "Смена (⚡:🤝🔄)":</strong> Меняется
-                        местами с 🤝 Союзником, если ходит на занятую им клетку.</li>
-                    <li><strong>🏹 Лучник:</strong> Ходит на 1 клетку по диагонали (⬆️:1✖️). Не ходит на заблокированные
-                        клетки (⛔:🤝🏰🏔️🌊). <strong>ЭКСТРА: "Дальний выстрел (⚡:🧨+1)":</strong> Может походить на 2
-                        клетки, чтобы захватить 🧨 Врага.</li>
-                </ul>
-
-                <h4>🐎 Кавалерия и Чудовища</h4>
-                <ul>
-                    <li><strong>🐴 Легкая Кав.:</strong> Ходит буквой "Г" диагонально (⬆️:2+1✔️). <strong>НЕ</strong>
-                        может
-                        проходить сквозь заблокированные клетки (⛔:🏰🏔️🌊).
-                        <strong>ЭКСТРА: "Прыжок (⚡:👻🪖)":</strong> Перепрыгивает через 🤝 союзников и 🧨 врагов.
-                    </li>
-                    <li><strong>🛡️ Тяжелая Кав.:</strong> Ходит буквой "Г" ортогонально (⬆️:2+1L). <strong>НЕ</strong>
-                        может
-                        проходить сквозь заблокированные клетки (⛔:🧨🏰🏔️🌊).
-                        <strong>ЭКСТРА: "Прорыв (⚡:👻🤝)":</strong> Проходит сквозь 🤝 войска союзники.
-                    </li>
-                    <li><strong>🐘 Слон:</strong> Ходит ортогонально (⬆️:➕). Не проходит сквозь заблокированные
-                        клетки (⛔:🪖🏰🏔️🌊). <strong>ЭКСТРА: "Толстая шкура (⚡:🔒+🧨🧨или🐉):"</strong> Иммунитет к
-                        атакам одиночек (нужно 2+ врага или 🐉 Дракон для захвата).</li>
-                    <li><strong>🐉 Дракон:</strong> Ходит в любом направлении (⬆️:➕✖️). Не проходит сквозь
-                        заблокированные
-                        клетки (⛔:🪖🏰). <strong>ЭКСТРА: "Полет (⚡:🐘👻🏔️🌊):"</strong>
-                        Может летать над 🏔️ Горами и 🌊 Водой и захватывать 🐘 слонов в одиночку.</li>
-                </ul>
-
-                <h4>⚙️ Осадные Орудия</h4>
-                <ul>
-                    <li><strong>Осадные Орудия</strong> могут ⬆️ двигаться (на 🔲 пустую клетку: захват только
-                        стрельбой) или 🎯 стрелять, но не оба действия за один ход.</li>
-                    <li><strong>☄️ Требушет:</strong> Ходит Диагонально на 1 клетку (должна быть 🔲 пустой) (⬆️:1✖️🔲).
-                        Стреляет
-                        Ортогонально (🎯:➕).
-                        Не проходит сквозь заблокированные клетки (⛔:🏰🏔️). <strong>ЭКСТРА: "Навесная стрельба
-                            (⚡:👻🪖🌊):"</strong> Может стрелять поверх 🌊 Воды и клеток, занятых 🧨 Врагами или 🤝
-                        Союзниками.</li>
-                    <li><strong>🦂 Скорпион:</strong> Ходит Ортогонально на 1 клетку (должна быть 🔲 пустой) (⬆️:1➕🔲).
-                        Стреляет
-                        Диагонально (🎯:✖️).
-                        Не проходит сквозь заблокированные клетки (⛔:🤝🏰🏔️). <strong>ЭКСТРА: "Шампур
-                            (⚡:👻🌊🧨🍡🧨):"</strong> Может стрелять сквозь 🌊 Воду и клетки с 🧨 Врагами, если
-                        второй 🧨 Враг находится менее чем в 2 клетках позади, а промежуточная клетка (если есть)
-                        🔲 пуста или занята 🌊 водой: в этом случае захватывает обоих (перетащите на второго врага).
-                    </li>
-                </ul>
-
-                <h3>3. МЕХАНИКА ОСАДЫ</h3>
-                <p><strong>ШАГ 1: УГРОЗА</strong><br>Разместите <strong>2+ 🤝 Фигуры союзников</strong> в Кольце
-                    Выхода 🧨 Вражеской 🏰 Крепости.</p>
-                <p><strong>ШАГ 2: ЗАЩИТА</strong><br>У защитника есть <strong>1 ход</strong>, чтобы прорвать кольцо.
-                </p>
-                <p><strong>ШАГ 3: КАЗНЬ</strong><br>Если не вышло, атакующий нажимает на 🏰 Крепость, чтобы ВЫПОЛНИТЬ
-                    ОСАДУ.</p>
-                <p><strong>ШАГ 4: ПОСЛЕДСТВИЯ</strong></p>
-                <ul>
-                    <li><strong>Спасение:</strong> Атакующий освобождает 1 пленника, нажав на него во вражеской темнице.
-                        Его войска возвращаются в Резерв.</li>
-                    <li><strong>Обмен заложниками:</strong> Защитник спасает 1 фигуру (если было Спасение), выводя её
-                        из Резерва в Кольцо Выхода, или <strong>ТЕРЯЕТ
-                            ВСЁ</strong> (если в Темнице не было фигур для обмена).</li>
-                </ul>
-            </div>
-
         </div>
     </div>
 
@@ -1054,8 +899,6 @@
 
         let isCheck = false; // Nueva bandera para el estado de Jaque
 
-        let gameOverData = null;
-
         // --- NUEVO: CONTROL DE NOTIFICACIONES AL ARRASTRAR ---
         let lastHoveredTile = null; // Para evitar parpadeos si nos movemos dentro de la misma casilla
 
@@ -1071,7 +914,7 @@
 
         // --- NUEVO: INFORMACIÓN DE UNIDADES (HOVER MULTI-IDIOMA) ---
         let hoverTimer = null;
-        let infoDisplayTimer = null;
+
         let boardHelpTimer = null; // Timer para la ayuda visual en el tablero (3s)
 
         const UNIT_INFO = {
@@ -1082,7 +925,7 @@
                 'arqueros': "🏹 ARQUERO:·····⬆️:1✖️·····⛔:🤝🏰🏔️🌊·····⚡:🧨+1",
                 'c_ligera': "🐴 C. LIGERA:·····⬆️:2+1✔️·····⛔:🏰🏔️🌊·····⚡:👻🪖",
                 'c_pesada': "🛡️ C. PESADA:·····⬆️:2+1L·····⛔:🧨🏰🏔️🌊·····⚡:👻🤝",
-                'elefante': "🐘 ELEFANTE:·····⬆️:➕·····⛔:🪖🏰🏔️🌊·····⚡:🔒+🧨🧨/🐉",
+                'elefante': "🐘 ELEFANTE:·····⬆️:➕·····⛔:🪖🏰🏔️🌊·····⚡:🔒+🧨🧨o🐉",
                 'dragon': "🐉 DRAGÓN:·····⬆️:➕✖️·····⛔:🪖🏰·····⚡:🐘👻🏔️🌊",
                 'trabuquete': "☄️ TRABUQUETE:·····⬆️:1✖️🔲·····🎯:➕·····⛔:🏰🏔️·····⚡:👻🪖🌊",
                 'escorpion': "🦂 ESCORPIÓN:·····⬆️:1➕🔲·····🎯:✖️·····⛔:🤝🏰🏔️·····⚡:👻🌊🧨🍡🧨",
@@ -1096,425 +939,39 @@
                 'arqueros': "🏹 ARCHER:·····⬆️:1✖️·····⛔:🤝🏰🏔️🌊·····⚡:🧨+1",
                 'c_ligera': "🐴 LT. CAVALRY:·····⬆️:2+1✔️·····⛔:🏰🏔️🌊·····⚡:👻🪖",
                 'c_pesada': "🛡️ HVY. CAVALRY:·····⬆️:2+1L·····⛔:🧨🏰🏔️🌊·····⚡:👻🤝",
-                'elefante': "🐘 ELEPHANT:·····⬆️:➕·····⛔:🪖🏰🏔️🌊·····⚡:🔒+🧨🧨/🐉",
+                'elefante': "🐘 ELEPHANT:·····⬆️:➕·····⛔:🪖🏰🏔️🌊·····⚡:🔒+🧨🧨o🐉",
                 'dragon': "🐉 DRAGON:·····⬆️:➕✖️·····⛔:🪖🏰·····⚡:🐘👻🏔️🌊",
                 'trabuquete': "☄️ TREBUCHET:·····⬆️:1✖️🔲·····🎯:➕·····⛔:🏰🏔️·····⚡:👻🪖🌊",
                 'escorpion': "🦂 SCORPION:·····⬆️:1➕🔲·····🎯:✖️·····⛔:🤝🏰🏔️·····⚡:👻🌊🧨🍡🧨",
                 'fortaleza': "🏰 FORTRESS:·····🏗️:🌊·····⬆️:⛔.",
                 'montana': "🏔️ MOUNTAIN:·····🏗️:🚩·····⬆️:⛔"
-            },
-            'ru': {
-                'rey': "👑 КОРОЛЬ:·····⬆️:1✖️➕·····⛔:🤝🏰🏔️🌊⚠️",
-                'chusma': "🏚️ ЧЕРНЬ:·····⬆️:1➕·····⛔:🤝🏰🏔️🌊·····⚡:+1🏚️",
-                'lanceros': "🔱 КОПЕЙЩИК:·····⬆️:1➕·····⛔:🏰🏔️🌊·····⚡:🤝🔄",
-                'arqueros': "🏹 ЛУЧНИК:·····⬆️:1✖️·····⛔:🤝🏰🏔️🌊·····⚡:🧨+1",
-                'c_ligera': "🐴 ЛЕГКАЯ КАВ.:·····⬆️:2+1✔️·····⛔:🏰🏔️🌊·····⚡:👻🪖",
-                'c_pesada': "🛡️ ТЯЖЕЛАЯ КАВ.:·····⬆️:2+1L·····⛔:🧨🏰🏔️🌊·····⚡:👻🤝",
-                'elefante': "🐘 СЛОН:·····⬆️:➕·····⛔:🪖🏰🏔️🌊·····⚡:🔒+🧨🧨/🐉",
-                'dragon': "🐉 ДРАКОН:·····⬆️:➕✖️·····⛔:🪖🏰·····⚡:🐘👻🏔️🌊",
-                'trabuquete': "☄️ ТРЕБУШЕТ:·····⬆️:1✖️🔲·····🎯:➕·····⛔:🏰🏔️·····⚡:👻🪖🌊",
-                'escorpion': "🦂 СКОРПИОН:·····⬆️:1➕🔲·····🎯:✖️·····⛔:🤝🏰🏔️·····⚡:👻🌊🧨🍡🧨",
-                'fortaleza': "🏰 КРЕПОСТЬ:·····🏗️:🌊·····⬆️:⛔",
-                'montana': "🏔️ ГОРА:·····🏗️:🚩·····⬆️:⛔"
-            }
-
-        };
-
-
-        // --- DICCIONARIO DE TRADUCCIÓN (CORREGIDO Y COMPLETADO) ---
-        const MESSAGES = {
-            es: {
-                // Nombres de Ejércitos (Solemnes)
-                "north": "EJÉRCITO DEL NORTE",
-                "south": "EJÉRCITO DEL SUR",
-                "rojo": "ROJO",
-                "negro": "NEGRO",
-                // Claves compuestas para inicio de partida
-                "DE ROJO": "DEL EJÉRCITO ROJO",
-                "DE NEGRO": "DEL EJÉRCITO NEGRO",
-
-                // Textos Generales
-                "init": "Elige tu destino: Arrastra una Fortaleza para empezar. Mantén el ratón sobre cualquier unidad para Ayuda Visual",
-                "turn_part": "Turno",
-                "deploy_phase": "Fase Despliegue",
-                "dungeon_title": "MAZMORRA",
-
-                // Mensajes de Juego
-                "msg_valid": "Movimiento Válido",
-                "msg_invalid": "Movimiento Ilegal",
-                "err_check": "⚠️ JAQUE ⚠️",
-
-                // Errores y Notas
-                "water": " AGUA 🌊",
-                "fortress": "FORTALEZA 🏰",
-                "mountain": "MONTAÑA 🏔️",
-                "occupied": "OCUPADO",
-                "limits": "🚫 FUERA DE LÍMITES",
-                "siege_only": "🔒 Solo puedes mover las unidades que asedian la fortaleza.",
-                "deploy_fort": "🚫 Solo despliegue en Fortaleza.",
-                "invalid_cell": "🚫 Casilla inválida.",
-                "save_king": "👑 ¡Salva al REY!",
-                "death_zone": "⛔ ¡Zona mortal!",
-                "only_near": "⛔ Solo junto a tu Fortaleza.",
-                "no_water": "⛔ No en el agua.",
-                "zone_occ": "⛔ Zona ocupada.",
-                "illegal": "⛔ Movimiento ilegal",
-                "check_alert": "⚠️ ¡ESTÁS EN JAQUE! Debes salvar al Rey.",
-                "suicide": "⛔ Movimiento inválido: Dejaría al Rey expuesto.",
-                "relay": "🔄 Relevo de Lancero",
-                "ally": "⛔ Casilla aliada.",
-                "shot": "🔥 ¡DISPARO!",
-                "capture": "⚔️ ¡CAPTURA!",
-                "siege_cancel": "🏳️ Asedio cancelado.",
-                "first_fort": "🚫 Primero debes construir la FORTALEZA",
-                "zone_forbid": "🚫 Zona Prohibida.",
-                "deploy_near": "🛡️ Despliega junto a la Fortaleza",
-                "no_fit": "¡No cabe aquí!",
-                "pos_invalid": "🏰 Posición inválida",
-                "turn_j1": "⚠️ Turno del JUGADOR 1",
-                "turn_j2": "⚠️ Turno del JUGADOR 2",
-                "relocated": "Unidad reubicada",
-                "fort_set": "🏰 Fortaleza establecida.",
-                "elephant_fail": "🐘 ¡IMPOSIBLE! El ataque no es suficiente. Necesitas al menos 2 unidades amenazando al Elefante.",
-
-                // Final de Partida y Fases
-                "siege_use_reserve": "⚠️ Debes sacar una pieza de la RESERVA.",
-                "mountains_left": "⚠️ Debes colocar todas las MONTAÑAS en el mapa antes de terminar.",
-                "mountains_start": "⚠️ Debes colocar todas las MONTAÑAS en el mapa antes de empezar.",
-                "fort_reset": "🏰 Reinicio: Fortaleza retirada. Puedes cambiar de bando.",
-                "fort_soft": "↩️ Fortaleza retirada. (Tus montañas se mantienen).",
-                "fort_retry": "↩️ Fortaleza retirada. Puedes colocarla de nuevo.",
-                "rescue_fail": "⛔ Necesitas más tropas rodeando la Fortaleza Enemiga para rescatar.",
-                "rescue_empty": "🚁 ¡RESCATE ÉPICO! La fortaleza enemiga estaba vacía.",
-                "siege_end": "🔄 Asedio finalizado. Tus tropas regresan a la RESERVA.",
-                "fort_empty": "📭 Fortaleza vacía. Fin del asedio.",
-                "status_win": "👑 VICTORIA DEL EJÉRCITO {army}",
-                "status_draw": "🏁 FIN DE PARTIDA: TABLAS POR REY AHOGADO",
-                "status_gameover": "🏁 FIN DE PARTIDA: {reason}. {winner}",
-                "reason_mate": "POR JAQUE MATE",
-                "reason_stalemate": "TABLAS POR REY AHOGADO", // (Aunque esta no se usa en el mensaje final de tablas, es bueno tenerla)
-
-                // Tooltips y Ayuda
-                "debug_confirm": "⚠️ ¿ACTIVAR MODO DEBUG?\nSe reiniciará la partida con despliegue aleatorio legal.",
-                "debug_active": "🛠️ MODO DEBUG: Despliegue Legal Completado",
-                "click_siege": "CLICK PARA EJECUTAR EL ASEDIO",
-                "click_pass": "Click para CEDER EL TURNO",
-                "click_rescue": "CLICK PARA RESCATAR Y EJECUTAR ASEDIO",
-                "help_visualizing": "💡 Visualizando {count} movimientos posibles...",
-                "help_blocked": "🚫 {unit}: SIN MOVIMIENTOS POSIBLES (BLOQUEADA)",
-                "occupied_simple": "⛔ Casilla ocupada",
-                "water_error": "🌊 ¡Al agua no!",
-                "water_simple": "⛔ Agua.",
-                "mountain_simple": "⛔ Montaña.",
-                "fortress_simple": "⛔ Fortaleza.",
-                "fortress_first_short": "⚠️ Primero la FORTALEZA.",
-
-                // --- MENSAJES COMPUESTOS (NUEVOS) ---
-                "msg_siege_break": "🔥 Asedio roto. {count} capturados.",
-                "msg_reinforcements": "🆕 Refuerzos: {unit}",
-                "msg_return_reserve": "↩️ {unit} devuelta a la reserva.",
-                "msg_p1_control": "J1: {color} controla el {zone}.",
-                "msg_deployed": "Desplegado: {unit}",
-                "msg_p1_finish": "✅ Despliegue J1 Finalizado. Turno del JUGADOR 2 ({color}).",
-                "msg_game_start": "¡COMIENZA LA PARTIDA! Turno de {color}",
-                "msg_rescued": "🔓 {unit} rescatado. Prisionero y tropas regresan a tu RESERVA.",
-                "no_exchange": "🚫 Sin intercambio: {count} unidades capturadas en la reserva.",
-
-                // ... (otras claves)
-                "status_prisoner": "🔓 {army}: DEFENSA FALLIDA, ¡SELECCIONA UN PRISIONERO!",
-                "status_siege_ready": "🎯 {army}: ASEDIO LISTO, PULSA LA FORTALEZA.",
-                "status_sacrifice": "🔥 {army}: ¡SACRIFICIO! DEBE SALVAR UNA PIEZA.",
-                "status_chusma": "⚡ BONIFICACIÓN CHUSMA: Mueve otra Chusma o haz click para terminar.",
-                "status_check": "⚠️ ¡JAQUE! {army} ⚠️",
-                "status_surrounded": "🛡️ {army}: ¡ALERTA! FORTALEZA RODEADA.",
-
-                // Unidades y Colores
-                "rey": "REY", "chusma": "CHUSMA", "lanceros": "LANCERO", "arqueros": "ARQUERO",
-                "c_ligera": "C. LIGERA", "c_pesada": "C. PESADA", "elefante": "ELEFANTE",
-                "dragon": "DRAGÓN", "trabuquete": "TRABUQUETE", "escorpion": "ESCORPIÓN",
-                "fortaleza": "FORTALEZA", "montana": "MONTAÑA"
-            },
-            en: {
-                "north": "NORTHERN ARMY",
-                "south": "SOUTHERN ARMY",
-                "rojo": "RED",
-                "negro": "BLACK",
-                "DE ROJO": "RED ARMY",
-                "DE NEGRO": "BLACK ARMY",
-
-                "init": "Choose your destiny: Drag a Fortress to start. Hover for Visual Aid.",
-                "turn_part": "Turn",
-                "deploy_phase": "Deployment Phase",
-                "dungeon_title": "DUNGEON",
-
-                "msg_valid": "Valid Move",
-                "msg_invalid": "Illegal Move",
-                "err_check": "⚠️ CHECK ⚠️",
-
-                "water": "WATER 🌊",
-                "fortress": "FORTRESS 🏰",
-                "mountain": "MOUNTAIN 🏔️",
-                "occupied": "OCCUPIED",
-                "limits": "🚫 OUT OF BOUNDS",
-                "siege_only": "🔒 You can only move units besieging the fortress.",
-                "deploy_fort": "🚫 Deployment only at Fortress.",
-                "invalid_cell": "🚫 Invalid tile.",
-                "save_king": "👑 Save the KING!",
-                "death_zone": "⛔ Death zone!",
-                "only_near": "⛔ Only next to your Fortress.",
-                "no_water": "⛔ Not on water.",
-                "zone_occ": "⛔ Zone occupied.",
-                "illegal": "⛔ Illegal move",
-                "check_alert": "⚠️ YOU ARE IN CHECK! You must save the King.",
-                "suicide": "⛔ Invalid move: King would be exposed.",
-                "relay": "🔄 Lancer Relay",
-                "ally": "⛔ Ally tile.",
-                "shot": "🔥 SHOT!",
-                "capture": "⚔️ CAPTURE!",
-                "siege_cancel": "🏳️ Siege canceled.",
-                "first_fort": "🚫 You must build the FORTRESS first",
-                "zone_forbid": "🚫 Forbidden Zone.",
-                "deploy_near": "🛡️ Deploy next to the Fortress",
-                "no_fit": "It doesn't fit here!",
-                "pos_invalid": "🏰 Invalid position",
-                "turn_j1": "⚠️ PLAYER 1 Turn",
-                "turn_j2": "⚠️ PLAYER 2 Turn",
-                "relocated": "Unit relocated",
-                "fort_set": "🏰 Fortress established.",
-                "elephant_fail": "🐘 IMPOSSIBLE! Attack insufficient. Need 2+ units threatening the Elephant.",
-
-                "siege_use_reserve": "⚠️ You must take a piece from the RESERVE.",
-                "mountains_left": "⚠️ You must place all MOUNTAINS before finishing.",
-                "mountains_start": "⚠️ You must place all MOUNTAINS before starting.",
-                "fort_reset": "🏰 Reset: Fortress removed. You can switch sides.",
-                "fort_soft": "↩️ Fortress removed. (Your mountains remain).",
-                "fort_retry": "↩️ Fortress removed. You can place it again.",
-                "rescue_fail": "⛔ Need more troops surrounding Enemy Fortress.",
-                "rescue_empty": "🚁 EPIC RESCUE! The enemy fortress was empty.",
-                "siege_end": "🔄 Siege ended. Troops return to RESERVE.",
-                "fort_empty": "📭 Fortress empty. Siege over.",
-                "status_win": "👑 VICTORY FOR {army} ARMY",
-                "status_draw": "🏁 GAME OVER: DRAW (STALEMATE)",
-                "status_gameover": "🏁 GAME OVER: {reason}. {winner}",
-                "reason_mate": "BY CHECKMATE",
-                "reason_stalemate": "STALEMATE",
-
-                "debug_confirm": "⚠️ ACTIVATE DEBUG MODE?\nThe game will restart with a legal random deployment.",
-                "debug_active": "🛠️ DEBUG MODE: Legal Deployment Completed",
-                "click_siege": "CLICK TO EXECUTE SIEGE",
-                "click_pass": "CLICK TO PASS TURN",
-                "click_rescue": "CLICK TO RESCUE AND EXECUTE SIEGE",
-                "help_visualizing": "💡 Visualizing {count} possible moves...",
-                "help_blocked": "🚫 {unit}: NO MOVES POSSIBLE (BLOCKED)",
-                "occupied_simple": "⛔ Tile occupied",
-                "water_error": "🌊 Not on water!",
-                "water_simple": "⛔ Water.",
-                "mountain_simple": "⛔ Mountain.",
-                "fortress_simple": "⛔ Fortress.",
-                "fortress_first_short": "⚠️ FORTRESS first.",
-
-                // --- COMPOSITE MESSAGES (NEW) ---
-                "msg_siege_break": "🔥 Siege broken. {count} captured.",
-                "msg_reinforcements": "🆕 Reinforcements: {unit}",
-                "msg_return_reserve": "↩️ {unit} returned to reserve.",
-                "msg_p1_control": "P1: {color} controls the {zone}.",
-                "msg_deployed": "Deployed: {unit}",
-                "msg_p1_finish": "✅ P1 Deployment Finished. PLAYER 2 Turn ({color}).",
-                "msg_game_start": "GAME START! {color} Turn",
-                "msg_rescued": "🔓 {unit} rescued. Prisoner and troops return to RESERVE.",
-                "no_exchange": "🚫 No exchange: {count} units captured in reserve.",
-
-                // ... (other keys)
-                "status_prisoner": "🔓 {army}: DEFENSE FAILED, SELECT PRISONER!",
-                "status_siege_ready": "🎯 {army}: SIEGE READY, CLICK FORTRESS!",
-                "status_sacrifice": "🔥 {army}: SACRIFICE! SAVE ONE UNIT.",
-                "status_chusma": "⚡ RABBLE BONUS: Move another or click to finish.",
-                "status_check": "⚠️ CHECK! {army} ⚠️",
-                "status_surrounded": "🛡️ {army}: ALERT! FORTRESS SURROUNDED.",
-
-                "rey": "KING", "chusma": "RABBLE", "lanceros": "LANCER", "arqueros": "ARCHER",
-                "c_ligera": "LT. CAVALRY", "c_pesada": "HVY. CAVALRY", "elefante": "ELEPHANT",
-                "dragon": "DRAGON", "trabuquete": "TREBUCHET", "escorpion": "SCORPION",
-                "fortaleza": "FORTRESS", "montana": "MOUNTAIN"
-            },
-            ru: {
-                // Имена Армий
-                "north": "СЕВЕРНАЯ АРМИЯ",
-                "south": "ЮЖНАЯ АРМИЯ",
-                "rojo": "КРАСНЫЙ",
-                "negro": "ЧЕРНЫЙ",
-                "DE ROJO": "КРАСНОЙ АРМИИ",
-                "DE NEGRO": "ЧЕРНОЙ АРМИИ",
-
-                // Textos Generales
-                "init": "Выберите назначение: Начните с размещения Крепости.",
-                "turn_part": "Ход",
-                "deploy_phase": "Фаза Развертывания",
-                "dungeon_title": "ТЕМНИЦА",
-
-                // Mensajes de Juego
-                "msg_valid": "Верный ход",
-                "msg_invalid": "Неверный ход",
-                "err_check": "⚠️ ШАХ ⚠️",
-
-                // Errores y Notas
-                "water": "ВОДА 🌊",
-                "fortress": "КРЕПОСТЬ 🏰",
-                "mountain": "ГОРА 🏔️",
-                "occupied": "ЗАНЯТО",
-                "limits": "🚫 ЗА ПРЕДЕЛАМИ",
-                "siege_only": "🔒 Можно двигать только осадные войска.",
-                "deploy_fort": "🚫 Развертывание только у Крепости.",
-                "invalid_cell": "🚫 Неверная клетка.",
-                "save_king": "👑 Спасите КОРОЛЯ!",
-                "death_zone": "⛔ Смертельная зона!",
-                "only_near": "⛔ Только рядом с Крепостью.",
-                "no_water": "⛔ Не в воду.",
-                "zone_occ": "⛔ Зона занята.",
-                "illegal": "⛔ Нелегальный ход",
-                "check_alert": "⚠️ ВАМ ШАХ! Спасайте Короля.",
-                "suicide": "⛔ Нельзя: Король будет под ударом.",
-                "relay": "🔄 Смена Копейщика",
-                "ally": "⛔ Клетка союзника.",
-                "shot": "🔥 ВЫСТРЕЛ!",
-                "capture": "⚔️ ЗАХВАТ!",
-                "siege_cancel": "🏳️ Осада отменена.",
-                "first_fort": "🚫 Сначала постройте КРЕПОСТЬ",
-                "zone_forbid": "🚫 Запретная зона.",
-                "deploy_near": "🛡️ Развертывание у Крепости",
-                "no_fit": "Не помещается!",
-                "pos_invalid": "🏰 Неверная позиция",
-                "turn_j1": "⚠️ Ход ИГРОКА 1",
-                "turn_j2": "⚠️ Ход ИГРОКА 2",
-                "relocated": "Фигура перемещена",
-                "fort_set": "🏰 Крепость установлена.",
-                "elephant_fail": "🐘 НЕВОЗМОЖНО! Нужна атака 2+ фигур.",
-                "siege_use_reserve": "⚠️ Возьмите фигуру из РЕЗЕРВА.",
-
-                // Final de Partida
-                "mountains_left": "⚠️ Разместите все ГОРЫ перед окончанием хода.",
-                "mountains_start": "⚠️ Разместите все ГОРЫ перед началом игры.",
-                "fort_reset": "🏰 Сброс: Крепость убрана. Можете поменять цвет Армии",
-                "fort_soft": "↩️ Крепость убрана (Горы остаются).",
-                "fort_retry": "↩️ Крепость убрана. Можете установить ее заново",
-                "rescue_fail": "⛔ Нужно больше войск для окружения вражеской КРЕПОСТИ для спасения.",
-                "rescue_empty": "🚁 ЭПИЧНОЕ СПАСЕНИЕ! Вражеская Крепость пуста.",
-                "siege_end": "🔄 Осада окончена. Войска возвращаются в РЕЗЕРВ.",
-                "fort_empty": "📭 Крепость пуста. Конец осады.",
-
-                // Mensajes Compuestos (Plantillas)
-                "status_win": "👑 ПОБЕДА АРМИИ {army}",
-                "status_draw": "🏁 КОНЕЦ ИГРЫ: НИЧЬЯ (ПАТ)",
-                "status_gameover": "🏁 КОНЕЦ ИГРЫ: {reason}. {winner}",
-                "reason_mate": "МАТ",
-                "reason_stalemate": "ПАТ",
-                "msg_siege_break": "🔥 Осада прорвана. Захвачено: {count}.",
-                "msg_reinforcements": "🆕 Подкрепление: {unit}",
-                "msg_return_reserve": "↩️ {unit} вернулся в резерв.",
-                "msg_p1_control": "ИГРОК: {color} контролирует {zone}.",
-                "msg_deployed": "Развернут: {unit}",
-                "msg_p1_finish": "✅ ИГРОК Готов. Ход ИГРОКА ({color}).",
-                "msg_game_start": "ИГРА НАЧАЛАСЬ! Ход: {color}",
-                "msg_rescued": "🔓 {unit} спасен. Возврат в РЕЗЕРВ.",
-                "no_exchange": "🚫 Нет обмена: {count} захвачено в резерве.",
-
-                // Tooltips
-                "click_siege": "КЛИК ДЛЯ ОСАДЫ",
-                "click_pass": "КЛИК для ПАСА",
-                "click_rescue": "КЛИК ДЛЯ СПАСЕНИЯ 1 ФИГУРЫ",
-                "help_visualizing": "💡 Возможных ходов: {count}...",
-                "help_blocked": "🚫 {unit}: НЕТ ХОДОВ (ЗАБЛОКТРОВАНО)",
-                "occupied_simple": "⛔ Занято",
-                "water_error": "🌊 Не в воду!",
-                "water_simple": "⛔ Вода.",
-                "mountain_simple": "⛔ Гора.",
-                "fortress_simple": "⛔ Крепость.",
-                "fortress_first_short": "⚠️ Сначала КРЕПОСТЬ.",
-                "no_fit": "Не влезает!",
-
-                // Debug
-                "debug_confirm": "⚠️ ВКЛЮЧИТЬ ОТЛАДКУ?\nСлучайное развертывание.",
-                "debug_active": "🛠️ РЕЖИМ ОТЛАДКИ: Готово",
-
-                // ... (другие ключи)
-                "status_prisoner": "🔓 {army}: ОБОРОНА ПРОРВАНА, ВЫБЕРИТЕ ПЛЕННИКА!",
-                "status_siege_ready": "🎯 {army}: ОСАДА ГОТОВА, НАЖМИТЕ НА КРЕПОСТЬ!",
-                "status_sacrifice": "🔥 {army}: ЖЕРТВА! СПАСИТЕ ОДНУ ФИГУРУ.",
-                "status_chusma": "⚡ БОНУС ЧЕРНИ: Ходите другой или нажмите для завершения.",
-                "status_check": "⚠️ ШАХ! {army} ⚠️",
-                "status_surrounded": "🛡️ {army}: ТРЕВОГА! КРЕПОСТЬ ОКРУЖЕНА.",
-
-                // Unidades
-                "rey": "КОРОЛЬ", "chusma": "ЧЕРНЬ", "lanceros": "КОПЕЙЩИК", "arqueros": "ЛУЧНИК",
-                "c_ligera": "ЛЕГКАЯ КАВ.", "c_pesada": "ТЯЖЕЛАЯ КАВ.", "elefante": "СЛОН",
-                "dragon": "ДРАКОН", "trabuquete": "ТРЕБУШЕТ", "escorpion": "СКОРПИОН",
-                "fortaleza": "КРЕПОСТЬ", "montana": "ГОРА"
             }
         };
-
-        // Función mágica: Busca el texto español y devuelve el inglés
-        function autoTranslate(text) {
-            if ((currentLang || 'es') === 'es') return text; // Si estamos en español, no hacer nada
-
-            // 1. Búsqueda Inversa: ¿Existe este texto exacto en MESSAGES.es?
-            const esKeys = Object.keys(MESSAGES.es);
-            const foundKey = esKeys.find(key => MESSAGES.es[key] === text);
-
-            if (foundKey) {
-                return MESSAGES.en[foundKey];
-            }
-
-            // Si no lo encuentra (por ejemplo, tiene variables), devuelve el original
-            return text;
-        }
-
-        // Función manual (para los casos con variables)
-        function t(key, params = {}) {
-            const lang = currentLang || 'es';
-            let text = MESSAGES[lang][key] || MESSAGES['es'][key] || key;
-            for (const [k, v] of Object.entries(params)) {
-                text = text.replace(`{${k}}`, v);
-            }
-            return text;
-        }
 
         // --- FUNCIONES DE HOVER ACTUALIZADAS ---
 
         function handleUnitHover(type, army, r, c) {
             if (draggingMeta) return;
 
-            // PROTECCIÓN: Si la partida terminó, no tapamos el resultado
-            if (gameState === 'game-over') return;
-
-            // 1. Timer de Aparición (1 segundo)
+            // 1. Timer de Texto (1 segundo)
             if (hoverTimer) clearTimeout(hoverTimer);
-
-            // Si ya había un timer de auto-cierre corriendo, lo limpiamos para reiniciar el ciclo
-            if (infoDisplayTimer) clearTimeout(infoDisplayTimer);
-
             hoverTimer = setTimeout(() => {
                 if (!draggingMeta) {
                     const bar = document.getElementById('status-bar');
+                    // Detectar idioma
                     const lang = currentLang || 'es';
                     const dict = UNIT_INFO[lang] || UNIT_INFO['es'];
                     const info = dict[type] || type.toUpperCase();
 
-                    // Mostramos la info
                     bar.innerText = `ℹ️ ${info}`;
-                    bar.style.color = '#3498db';
+                    bar.style.color = '#3498db'; // Azul informativo
                     bar.classList.remove('status-critical');
-
-                    // --- NUEVO: AUTO-CIERRE DE LA AYUDA ---
-                    // Tras 4 segundos, restauramos el mensaje prioritario (Asedio/Jaque/Turno)
-                    // aunque el ratón siga encima de la unidad.
-                    infoDisplayTimer = setTimeout(() => {
-                        updateStatusBar();
-                    }, 4000);
                 }
             }, 1000);
 
-            // 2. Timer de Tablero (3 segundos) - Luces verdes
-            const isMyPiece = (gameState === 'playing' && army === turnColor);
+            // 2. Timer de Tablero (3 segundos) - NUEVO
+            // Solo si la pieza es del turno actual o es setup (para no dar pistas del enemigo)
+            const isMyPiece = (gameState.includes('deploy') || army === turnColor);
 
             if (boardHelpTimer) clearTimeout(boardHelpTimer);
 
@@ -1528,15 +985,14 @@
         }
 
         function handleUnitLeave() {
-            // Limpiamos TODOS los timers
+            // Limpiamos ambos timers y los efectos visuales
             if (hoverTimer) clearTimeout(hoverTimer);
             if (boardHelpTimer) clearTimeout(boardHelpTimer);
-            if (infoDisplayTimer) clearTimeout(infoDisplayTimer); // <--- IMPORTANTE
 
-            clearGhosts();
+            clearGhosts(); // Borra las luces verdes/rojas del tablero
 
             if (!draggingMeta) {
-                updateStatusBar(); // Restaura el texto original inmediatamente al salir
+                updateStatusBar(); // Restaura el texto original
             }
         }
 
@@ -1591,13 +1047,12 @@
             }
 
             // 2. Feedback al usuario según el resultado
-            // Primero traducimos el nombre de la unidad para el mensaje
-            const unitName = t(type).toUpperCase(); // <--- TRADUCCIÓN AÑADIDA
-
             if (validMovesCount === 0) {
-                showNotification(t('help_blocked', { unit: unitName }), true);
+                // Mensaje de error/aviso si está totalmente bloqueada
+                showNotification(`🚫 ${type.toUpperCase()}: SIN MOVIMIENTOS POSIBLES (BLOQUEADA)`, true);
             } else {
-                showNotification(t('help_visualizing', { count: validMovesCount }));
+                // Mensaje informativo estándar con el número de opciones
+                showNotification(`💡 Visualizando ${validMovesCount} movimientos posibles...`);
             }
         }
 
@@ -1611,7 +1066,7 @@
 
 
         // --- 0. INTERFAZ DE AYUDA ---
-        let currentLang = 'en';
+        let currentLang = 'es';
 
         function toggleRules() {
             const modal = document.getElementById("rulesModal");
@@ -1622,31 +1077,23 @@
             const es = document.getElementById('rules-es');
             const en = document.getElementById('rules-en');
             const btn = document.getElementById('langToggleBtn');
-            const title = document.getElementById('rules-title');
+            const title = document.getElementById('rules-title'); // <--- NUEVO
 
             if (currentLang === 'es') {
+                // Cambiar a INGLÉS
                 es.style.display = 'none';
                 en.style.display = 'block';
                 btn.innerText = 'Leer en Español';
-                title.innerText = '📜 COTADREZ RULES';
+                title.innerText = '📜 COTADREZ RULES'; // <--- CAMBIO DE TÍTULO
                 currentLang = 'en';
             } else {
+                // Cambiar a ESPAÑOL
                 es.style.display = 'block';
                 en.style.display = 'none';
                 btn.innerText = 'Read in English';
-                title.innerText = '📜 REGLAMENTO';
+                title.innerText = '📜 REGLAMENTO';     // <--- CAMBIO DE TÍTULO
                 currentLang = 'es';
             }
-
-            // --- NUEVO: Actualizar etiquetas de Mazmorra ---
-            document.querySelectorAll('.dungeon-label').forEach(el => {
-                el.innerText = t('dungeon_title');
-            });
-            // -----------------------------------------------
-
-            updateStatusBar();
-            // También limpiamos cualquier tooltip que hubiera quedado
-            if (boardHelpTimer) clearTimeout(boardHelpTimer);
         }
 
         // Cerrar al hacer clic fuera del modal
@@ -1758,7 +1205,7 @@
                             if (gameState === 'siege-confirmation' && piece.army !== turnColor) {
                                 img.classList.add('siege-pulse');
                                 img.onclick = () => executeConfirmedSiege(turnColor, piece.army);
-                                img.title = t('click_siege');
+                                img.title = "CLICK PARA EJECUTAR EL ASEDIO";
                             }
                             // 2. Fase Normal (Turno Defensor): Si MI fortaleza está asediada, parpadea
                             // Usamos siegeStatus[piece.army] para saber si ESTA fortaleza concreta sufre asedio
@@ -1784,7 +1231,7 @@
                             if (chusmaMovedCoords && r === chusmaMovedCoords.r && c === chusmaMovedCoords.c) {
                                 canDrag = false;
                                 img.style.cursor = "pointer"; // Dedo para hacer click
-                                img.title = t('click_pass');
+                                img.title = "Click para CEDER EL TURNO";
                                 img.onclick = () => finishChusmaBonusTurn();
                                 // Efecto visual para destacar que está esperando
                                 img.style.filter = "drop-shadow(0 0 5px var(--c-gold)) brightness(1.2)";
@@ -1833,7 +1280,7 @@
             // --- EASTER EGG: Botón Invisible de Debug ---
             const egg = document.createElement('div');
             egg.className = 'debug-egg';
-            egg.title = "v7.1"; // Pista sutil si dejas el ratón quieto
+            egg.title = "v5.2"; // Pista sutil si dejas el ratón quieto
 
             // Usamos DOBLE CLICK para evitar accidentes durante la partida
             egg.ondblclick = () => activateDebugMode();
@@ -1975,7 +1422,7 @@
                     // Solo permitimos mover si la pieza es parte del asedio (está en el anillo enemigo)
                     const enemyFort = fortressPos[(army === 'rojo') ? 'negro' : 'rojo'];
                     if (!isInExitZone(r, c, enemyFort)) {
-                        showNotification(t('siege_only'));
+                        showNotification("🔒 Solo puedes mover las unidades que asedian la fortaleza.");
                         e.preventDefault();
                         return;
                     }
@@ -2045,46 +1492,44 @@
             e.dataTransfer.dropEffect = 'move';
             if (!draggingMeta) return;
 
+            // 1. VARIABLES GLOBALES
             let isValid = true;
             let specialMessage = "";
             let cells = [];
 
             clearGhosts();
 
+            // =========================================================
+            // A. FASE DE JUEGO (Playing, Confirmación, Bonus)
+            // =========================================================
             if (gameState === 'playing' || gameState === 'siege-confirmation' || gameState === 'playing-chusma-bonus') {
                 const target = logicBoard[r][c];
                 const type = draggingMeta.type;
                 const army = draggingMeta.army;
                 const source = draggingMeta.source;
 
-                // --- TRADUCCIÓN AQUÍ ---
-                if (terrain[r][c] === 'water') { isValid = false; specialMessage = t('water'); }
-                if (target && target.type === 'fortaleza') { isValid = false; specialMessage = t('fortress'); }
-                if (target && target.type === 'montana') { isValid = false; specialMessage = t('mountain'); }
+                // Validaciones Generales
+                if (terrain[r][c] === 'water') { isValid = false; specialMessage = " (AGUA 🌊)"; }
+                if (target && target.type === 'fortaleza') { isValid = false; specialMessage = " (FORTALEZA 🏰)"; }
+                if (target && target.type === 'montana') { isValid = false; specialMessage = " (MONTAÑA 🏔️)"; }
 
+                // Lógica Refuerzo vs Movimiento
                 if (source === 'reserve') {
                     const fOrigin = fortressPos[army];
                     if (!isInExitZone(r, c, fOrigin)) isValid = false;
                     if (target !== null) isValid = false;
                 } else {
-                    // 1. Validación Geométrica
-                    if (!isValidMove(type, draggingMeta.originR, draggingMeta.originC, r, c)) {
-                        isValid = false;
-                        // Dejamos el mensaje por defecto (Movimiento Ilegal)
-                    }
-
-                    // 2. Validación de Ocupación (Si la geometría era válida)
+                    if (!isValidMove(type, draggingMeta.originR, draggingMeta.originC, r, c)) isValid = false;
                     if (isValid && target) {
-                        if (target.army === army && type !== 'lanceros') {
-                            isValid = false;
-                            specialMessage = t('occupied'); // <--- AHORA TE AVISARÁ ESPECÍFICAMENTE
-                        }
+                        if (target.army === army && type !== 'lanceros') isValid = false;
                     }
                 }
-                cells = [{ r: r, c: c }];
+                cells = [{ r: r, c: c }]; // 1 casilla
             }
+            // =========================================================
+            // B. FASE DE DESPLIEGUE (Init, Deploy-P1, Deploy-P2)
+            // =========================================================
             else {
-                // FASE DESPLIEGUE
                 const army = draggingMeta.army;
                 const type = draggingMeta.type;
                 const isFortress = (type === 'fortaleza');
@@ -2092,36 +1537,38 @@
                 const hasFortress = fOrigin !== null;
                 const isMountain = (type === 'montana');
 
+                // 1. DEFINIR CELDAS (Ghosting 2x2 para Fortaleza)
                 cells = [];
                 if (isFortress) {
-                    if (r + 1 > 9 || c + 1 > 9) {
+                    if (r + 1 > 9 || c + 1 > 9) { // Se sale del mapa
                         isValid = false;
-                        specialMessage = t('limits'); // TRADUCCIÓN
+                        specialMessage = " (FUERA DE LÍMITES 🚫)";
                         cells = [{ r: r, c: c }];
                     } else {
+                        // Ocupa 4 celdas
                         cells.push({ r: r, c: c }, { r: r, c: c + 1 }, { r: r + 1, c: c }, { r: r + 1, c: c + 1 });
                     }
                 } else {
                     cells.push({ r: r, c: c });
                 }
 
+                // 2. VALIDACIONES DE DESPLIEGUE
+                // A. Fortaleza obligatoria primero
                 if (!isFortress && !hasFortress) isValid = false;
 
-                // Validación 2: ¿Estás en tu territorio?
-                let isWrongTerritory = false; // <--- NUEVA LÍNEA 1: Bandera de control
+                // B. Territorio correcto
                 if (p1Territory) {
                     const rowTerritory = getTerritory(r);
                     const myZone = (army === p1Color) ? p1Territory : (p1Territory === 'north' ? 'south' : 'north');
-                    if (rowTerritory !== myZone) {
-                        isValid = false;
-                        isWrongTerritory = true; // <--- NUEVA LÍNEA 2: Marcamos que estamos fuera
-                    }
+                    if (rowTerritory !== myZone) isValid = false;
                 }
 
+                // C. Anillo de salida (si no es fortaleza/montaña)
                 if (!isFortress && !isMountain && hasFortress) {
                     if (isValid && !isInExitZone(r, c, fOrigin)) isValid = false;
                 }
 
+                // D. Zona Prohibida Fortaleza (Bordes y centro)
                 if (isFortress) {
                     const invalidRows = [0, 4, 5, 9];
                     const invalidCols = [0, 9];
@@ -2129,46 +1576,64 @@
                     if (invalidCols.includes(c) || invalidCols.includes(c + 1)) isValid = false;
                 }
 
+                // E. Agua y Ocupación
                 for (let cell of cells) {
                     if (terrain[cell.r][cell.c] === 'water' && !isFortress) {
-                        isValid = false; specialMessage = t('water'); // TRADUCCIÓN
+                        isValid = false; specialMessage = " (AGUA 🌊)";
                     }
                     if (logicBoard[cell.r][cell.c] !== null) {
-                        isValid = false;
-                        // SOLO mostramos el mensaje si estamos en nuestro territorio.
-                        // Si estamos fuera, dejamos el mensaje genérico para no dar pistas.
-                        if (!isWrongTerritory) specialMessage = t('occupied');
+                        isValid = false; specialMessage = " (OCUPADO ⛔)";
                     }
                 }
             }
 
+            // --- NUEVO: VALIDACIÓN DE SEGURIDAD EN TIEMPO REAL (GHOSTING) ---
+            // Si técnicamente puedes moverte ahí, comprobamos si es un suicidio.
+            // FIX: Solo simulamos si NO venimos de la reserva y si es válido geométricamente
             if (isValid && gameState.startsWith('playing') && draggingMeta.source === 'board') {
                 try {
-                    if (!isSimulatedMoveSafe(draggingMeta.type, draggingMeta.originR, draggingMeta.originC, r, c, draggingMeta.army)) {
+                    // BLINDAJE: Envolvemos esto en try-catch.
+                    // Si el cálculo de Jaque falla por cualquier bug interno, 
+                    // capturamos el error para que NO congele la barra de estado ni el ghosting.
+                    // Ante la duda (error), asumimos que es seguro (isValid sigue true) para dejar jugar.
+
+                    if (!isSimulatedMoveSafe(type, draggingMeta.originR, draggingMeta.originC, r, c, army)) {
                         isValid = false;
-                        specialMessage = t('err_check'); // TRADUCCIÓN
+                        specialMessage = " (JAQUE ⚠️)";
                     }
-                } catch (err) { }
+                } catch (err) {
+                    console.warn("⚠️ Salto de seguridad en DragOver:", err);
+                    // No hacemos nada: isValid se mantiene true, así que se verá VERDE.
+                }
             }
 
+            // =========================================================
+            // C. VISUALIZACIÓN FINAL (Común)
+            // =========================================================
             const className = isValid ? 'ghost-valid' : 'ghost-invalid';
             cells.forEach(cell => {
                 const tile = document.querySelector(`.tile[data-r="${cell.r}"][data-c="${cell.c}"]`);
                 if (tile) tile.classList.add(className);
             });
 
+            // VISUALIZACIÓN EN BARRA DE ESTADO (Coordenadas y Validez)
+            // Esto sobrescribe cualquier mensaje de Jaque/Asedio MOMENTÁNEAMENTE mientras arrastras
             const currentTileId = `${r}-${c}`;
+
+            // Quitamos la comprobación de lastHoveredTile estricta para forzar el repintado si cambia el estado
             lastHoveredTile = currentTileId;
 
             const coordName = getCoordinateName(r, c);
             const statusIcon = isValid ? "✅" : "⛔";
-            // TRADUCCIÓN FINAL
-            const detailText = specialMessage ? specialMessage : (isValid ? t('msg_valid') : t('msg_invalid'));
+            // Si hay mensaje especial (ej: AGUA), lo usamos. Si no, genérico.
+            const detailText = specialMessage ? specialMessage : (isValid ? "Movimiento Válido" : "Movimiento Inválido");
 
             const bar = document.getElementById('status-bar');
             bar.innerText = `${coordName} ${detailText} ${statusIcon}`;
-            bar.style.color = isValid ? '#2ecc71' : '#e74c3c';
-            bar.classList.remove('status-critical');
+
+            // Forzamos colores de "semáforo" para el drag
+            bar.style.color = isValid ? '#2ecc71' : '#e74c3c'; // Verde o Rojo
+            bar.classList.remove('status-critical'); // Quitamos parpadeo mientras arrastras para leer mejor
             bar.style.opacity = 1;
         }
 
@@ -2210,14 +1675,14 @@
                 // de asedio hagas return;
 
                 // --- INICIO RESUMEN BLOQUE ASEDIO (Cópialo de tu v4.6) ---
-                if (data.source !== 'reserve') { showNotification(t('siege_use_reserve'), true); return; }
+                if (data.source !== 'reserve') { showNotification("⚠️ Debes sacar una pieza de la RESERVA.", true); return; }
                 const fOrigin = fortressPos[data.army];
-                if (!isInExitZone(r, c, fOrigin)) { showNotification(t('deploy_fort'), true); return; }
-                if (logicBoard[r][c] !== null || terrain[r][c] === 'water') { showNotification(t('invalid_cell'), true); return; }
+                if (!isInExitZone(r, c, fOrigin)) { showNotification("🚫 Solo despliegue en Fortaleza.", true); return; }
+                if (logicBoard[r][c] !== null || terrain[r][c] === 'water') { showNotification("🚫 Casilla inválida.", true); return; }
 
                 const myReserve = reserves[data.army];
-                if (myReserve['rey'] > 0 && data.type !== 'rey') { showNotification(t('save_king'), true); return; }
-                if (data.type === 'rey' && currentThreatMap && currentThreatMap[r][c] > 0) { showNotification(t('death_zone'), true); return; }
+                if (myReserve['rey'] > 0 && data.type !== 'rey') { showNotification("👑 ¡Salva al REY!", true); return; }
+                if (data.type === 'rey' && currentThreatMap && currentThreatMap[r][c] > 0) { showNotification("⛔ ¡Zona mortal!", true); return; }
 
                 if (reserves[data.army][data.type] > 0) {
                     reserves[data.army][data.type]--;
@@ -2232,7 +1697,7 @@
                         reserves[data.army][t] = 0;
                     }
                 }
-                showNotification(t('msg_siege_break', { count: capturedCount }));
+                showNotification(`🔥 Asedio roto. ${capturedCount} capturados.`);
                 gameState = 'playing'; besiegedArmy = null; turnColor = attackerArmy;
                 renderBoard(); updateInventories(); updateDungeons(); checkTurnStatus();
                 return;
@@ -2247,15 +1712,14 @@
                 // --- A. REFUERZOS (DESDE RESERVA) ---
                 if (data.source === 'reserve') {
                     const fOrigin = fortressPos[data.army];
-                    if (!isInExitZone(r, c, fOrigin)) { showNotification(t('only_near')); return; }
-                    if (terrain[r][c] === 'water') { showNotification(t('no_water')); return; }
-                    if (logicBoard[r][c] !== null) { showNotification(t('zone_occ')); return; }
+                    if (!isInExitZone(r, c, fOrigin)) { showNotification("⛔ Solo junto a tu Fortaleza."); return; }
+                    if (terrain[r][c] === 'water') { showNotification("⛔ No en el agua."); return; }
+                    if (logicBoard[r][c] !== null) { showNotification("⛔ Zona ocupada."); return; }
 
                     if (reserves[data.army][data.type] > 0) {
                         reserves[data.army][data.type]--;
                         logicBoard[r][c] = { army: data.army, type: data.type };
-
-                        showNotification(t('msg_reinforcements', { unit: t(data.type).toUpperCase() }));
+                        showNotification(`🆕 Refuerzos: ${data.type.toUpperCase()}`);
                     } else { return; }
                 }
 
@@ -2266,10 +1730,10 @@
                     const target = logicBoard[r][c];
 
                     // Validaciones básicas
-                    if (terrain[r][c] === 'water' && data.type !== 'trabuquete' && data.type !== 'escorpion') { showNotification(t('water_simple')); return; }
-                    if (target === null && terrain[r][c] === 'water') { showNotification(t('water_simple')); return; }
-                    if (target && target.type === 'montana') { showNotification(t('mountain_simple')); return; }
-                    if (target && target.type === 'fortaleza') { showNotification(t('fortress_simple')); return; }
+                    if (terrain[r][c] === 'water' && data.type !== 'trabuquete' && data.type !== 'escorpion') { showNotification("⛔ Agua."); return; }
+                    if (target === null && terrain[r][c] === 'water') { showNotification("⛔ Agua."); return; }
+                    if (target && target.type === 'montana') { showNotification("⛔ Montaña."); return; }
+                    if (target && target.type === 'fortaleza') { showNotification("⛔ Fortaleza."); return; }
 
                     // --- CORRECCIÓN ELEFANTE: LÓGICA ROBUSTA ---
                     if (target && target.type === 'elefante' && target.army !== data.army && data.type !== 'dragon') {
@@ -2277,20 +1741,21 @@
                         const totalThreats = countTotalThreats(r, c, data.army);
 
                         if (totalThreats < 2) {
-                            showNotification(t('elephant_fail'), true);
+                            showNotification("🐘 ¡IMPOSIBLE! El ataque no es suficiente. Necesitas al menos 2 unidades amenazando al Elefante.", true);
                             return;
                         }
                     }
+                    // -------------------------------------------
 
                     // Validación Geométrica
                     if (!isValidMove(data.type, data.originR, data.originC, r, c)) {
-                        showNotification(t('illegal')); return;
+                        showNotification("⛔ Movimiento ilegal"); return;
                     }
 
                     // --- NUEVO: VALIDACIÓN DE SEGURIDAD (ANTI-SUICIDIO / OBLIGACIÓN DE SALVAR REY) ---
                     // Antes de mover, simulamos si esto nos deja en Jaque.
                     if (!isSimulatedMoveSafe(data.type, data.originR, data.originC, r, c, data.army)) {
-                        const msg = isCheck ? t('check_alert') : t('suicide');
+                        const msg = isCheck ? "⚠️ ¡ESTÁS EN JAQUE! Debes salvar al Rey." : "⛔ Movimiento inválido: Dejaría al Rey expuesto.";
                         showNotification(msg, true);
                         return; // Cancelamos el movimiento
                     }
@@ -2303,8 +1768,8 @@
                             if (data.type === 'lanceros') {
                                 logicBoard[data.originR][data.originC] = target;
                                 logicBoard[r][c] = { army: data.army, type: data.type };
-                                showNotification(t('relay'));
-                            } else { showNotification(t('ally')); return; }
+                                showNotification("🔄 Relevo de Lancero");
+                            } else { showNotification("⛔ Casilla aliada."); return; }
                         } else {
                             // Enemigo (Captura/Disparo)
                             wasCapture = true;
@@ -2333,24 +1798,24 @@
                                 // Captura Objetivo
                                 if (target.type === 'rey') {
                                     gameState = 'game-over'; logicBoard[r][c] = null; renderBoard();
-                                    finishGame(data.army, "reason_mate");
+                                    document.getElementById('status-bar').innerText = `👑 VICTORIA ${data.army.toUpperCase()}`;
                                     return;
                                 }
                                 dungeons[data.army].push({ type: target.type, army: target.army });
                                 logicBoard[r][c] = null;
-                                showNotification(t('shot'));
+                                showNotification("🔥 ¡DISPARO!");
                             } else {
                                 // CAPTURA CUERPO A CUERPO (Se mueven)
                                 if (target.type === 'rey') {
                                     gameState = 'game-over'; logicBoard[data.originR][data.originC] = null;
                                     logicBoard[r][c] = { army: data.army, type: data.type }; renderBoard();
-                                    finishGame(data.army, "reason_mate");
+                                    document.getElementById('status-bar').innerText = `👑 VICTORIA ${data.army.toUpperCase()}`;
                                     return;
                                 }
                                 dungeons[data.army].push({ type: target.type, army: target.army });
                                 logicBoard[data.originR][data.originC] = null;
                                 logicBoard[r][c] = { army: data.army, type: data.type };
-                                showNotification(t('capture'));
+                                showNotification("⚔️ ¡CAPTURA!");
                             }
                         }
                     } else {
@@ -2406,7 +1871,7 @@
                     const defender = (data.army === 'rojo') ? 'negro' : 'rojo';
                     turnColor = defender; gameState = 'playing';
                     checkTurnStatus(); renderBoard(); updateInventories(); updateDungeons();
-                    if (!siegeStatus[defender]) showNotification(t('siege_cancel'));
+                    if (!siegeStatus[defender]) showNotification("🏳️ Asedio cancelado.");
                     return;
                 }
 
@@ -2460,12 +1925,12 @@
             const hasFortress = fOrigin !== null;
 
             // Validaciones
-            if (!isFortress && !hasFortress) { showNotification(t('first_fort'), true); return; }
+            if (!isFortress && !hasFortress) { showNotification("🚫 Primero debes construir la FORTALEZA", true); return; }
 
             if (p1Territory) {
                 const currentZone = getTerritory(r);
                 const myZone = (data.army === p1Color) ? p1Territory : (p1Territory === 'north' ? 'south' : 'north');
-                if (currentZone !== myZone) { showNotification(t('zone_forbid'), true); return; }
+                if (currentZone !== myZone) { showNotification("🚫 Zona Prohibida.", true); return; }
             }
 
             // BLOQUE MODIFICADO: Retorno a reserva si sale del anillo
@@ -2477,43 +1942,44 @@
                         logicBoard[data.originR][data.originC] = null;
                         reserves[data.army][data.type]++;
 
-                        showNotification(t('msg_return_reserve', { unit: t(data.type).toUpperCase() }));
+                        showNotification(`↩️ ${data.type.toUpperCase()} devuelta a la reserva.`);
                         renderBoard();
                         updateInventories();
                         return;
                     }
+                    // ---------------------------------------------------------------
 
-                    showNotification(t('deploy_near'), true); return;
+                    showNotification("🛡️ Despliega junto a la Fortaleza", true); return;
                 }
             }
 
             let cellsToCheck = [];
             if (isFortress) {
-                if (r + 1 > 9 || c + 1 > 9) { showNotification(t('no_fit'), true); return; }
+                if (r + 1 > 9 || c + 1 > 9) { showNotification("¡No cabe aquí!", true); return; }
                 cellsToCheck.push({ r: r, c: c }, { r: r, c: c + 1 }, { r: r + 1, c: c }, { r: r + 1, c: c + 1 });
                 const invalidRows = [0, 4, 5, 9]; const invalidCols = [0, 9];
                 if (invalidRows.includes(r) || invalidRows.includes(r + 1) || invalidCols.includes(c) || invalidCols.includes(c + 1)) {
-                    showNotification(t('pos_invalid'), true); return;
+                    showNotification("🏰 Posición inválida", true); return;
                 }
             } else {
                 cellsToCheck.push({ r: r, c: c });
             }
 
             for (let cell of cellsToCheck) {
-                if (terrain[cell.r][cell.c] === 'water' && !isFortress) { showNotification(t('water_error'), true); return; }
-                if (logicBoard[cell.r][cell.c] !== null) { showNotification(t('occupied'), true); return; }
+                if (terrain[cell.r][cell.c] === 'water' && !isFortress) { showNotification("🌊 ¡Al agua no!", true); return; }
+                if (logicBoard[cell.r][cell.c] !== null) { showNotification("⛔ Casilla ocupada", true); return; }
             }
 
             if (data.source === 'reserve') {
                 if (gameState === 'init') {
-                    if (!isFortress) { showNotification(t('first_fort'), true); return; }
+                    if (!isFortress) { showNotification("⚠️ Primero la FORTALEZA.", true); return; }
                     p1Color = data.army;
                     p2Color = (p1Color === 'rojo') ? 'negro' : 'rojo';
                     p1Territory = getTerritory(r);
                     gameState = 'deploy-p1';
                 }
-                if (gameState === 'deploy-p1' && data.army !== p1Color) { showNotification(t('turn_j1'), true); return; }
-                if (gameState === 'deploy-p2' && data.army !== p2Color) { showNotification(t('turn_j2'), true); return; }
+                if (gameState === 'deploy-p1' && data.army !== p1Color) { showNotification("⚠️ Turno del JUGADOR 1", true); return; }
+                if (gameState === 'deploy-p2' && data.army !== p2Color) { showNotification("⚠️ Turno del JUGADOR 2", true); return; }
 
                 if (reserves[data.army][data.type] > 0) {
                     reserves[data.army][data.type]--;
@@ -2521,24 +1987,17 @@
 
                     if (isFortress) {
                         fortressPos[data.army] = { r: r, c: c };
-
-                        if (gameState === 'deploy-p1') {
-                            showNotification(t('msg_p1_control', {
-                                color: t(p1Color).toUpperCase(),
-                                zone: t(p1Territory).toUpperCase()
-                            }));
-                        } else {
-                            showNotification(t('fort_set'));
-                        }
+                        if (gameState === 'deploy-p1') showNotification(`J1: ${p1Color.toUpperCase()} controla el ${p1Territory.toUpperCase()}.`);
+                        else showNotification("🏰 Fortaleza establecida.");
                     } else {
-                        showNotification(t('msg_deployed', { unit: t(data.type).toUpperCase() }));
+                        showNotification(`Desplegado: ${data.type.toUpperCase()}`);
                     }
                 }
             } else if (data.source === 'board') {
                 logicBoard[data.originR][data.originC] = null;
                 cellsToCheck.forEach(cell => logicBoard[cell.r][cell.c] = { army: data.army, type: data.type });
                 if (isFortress) fortressPos[data.army] = { r: r, c: c };
-                showNotification(t('relocated'));
+                showNotification("Unidad reubicada");
             }
 
             renderBoard();
@@ -2563,18 +2022,16 @@
 
                     const img = document.createElement('img');
                     img.src = getImgUrl(captive.army, captive.type);
-                    // Necesitamos una clave simple o construirlo
-                    const uName = t(captive.type).toUpperCase();
-                    img.title = (currentLang === 'en') ? `Prisoner: ${uName}` : `Prisionero: ${uName}`;
+                    img.title = `Prisionero: ${captive.type.toUpperCase()}`;
 
                     // LÓGICA DE RESCATE
-                    // Permitimos click si estamos en la fase de selección obligatoria
-                    const isRescueState = (gameState === 'siege-prisoner-select');
+                    // Permitimos click si estamos jugando o si estamos en la fase de selección obligatoria
+                    const isRescueState = (gameState === 'playing' || gameState === 'siege-prisoner-select');
 
                     if (isRescueState && captive.army === turnColor && jailerArmy !== turnColor) {
                         img.classList.add('rescue-target');
                         img.onclick = () => selectPrisonerToRescue(jailerArmy, index);
-                        img.title = t('click_rescue');
+                        img.title = "CLICK PARA RESCATAR Y EJECUTAR ASEDIO";
                     }
 
                     container.appendChild(img);
@@ -2623,7 +2080,7 @@
                     gameState = 'init';
 
                     init(); // Ahora sí, llenamos reservas y pintamos el tablero vacío
-                    showNotification(t('fort_reset'));
+                    showNotification("🏰 Reinicio: Fortaleza retirada. Puedes cambiar de bando.");
                     return;
                 }
 
@@ -2640,7 +2097,7 @@
                     fortressPos[p1Color] = null;
                     reserves[p1Color]['fortaleza'] = 1;
 
-                    showNotification(t('fort_soft'));
+                    showNotification("↩️ Fortaleza retirada. (Tus montañas se mantienen).");
                     renderBoard();
                     updateInventories();
                     return;
@@ -2649,15 +2106,13 @@
 
             // 2. Condición existente: Verificar si quedan montañas por poner
             if (reserves[p1Color]['montana'] > 0) {
-                showNotification(t('mountains_left'), true);
+                showNotification("⚠️ Debes colocar todas las MONTAÑAS en el mapa antes de terminar.", true);
                 return;
             }
 
             // 3. Pasar turno
             gameState = 'deploy-p2';
-
-            showNotification(t('msg_p1_finish', { color: t(p2Color).toUpperCase() }));
-
+            showNotification(`✅ Despliegue J1 Finalizado. Turno del JUGADOR 2 (${p2Color.toUpperCase()}).`);
             renderBoard();
             updateInventories();
         }
@@ -2691,7 +2146,7 @@
                 fortressPos[p2Color] = null;
                 reserves[p2Color]['fortaleza'] = 1;
 
-                showNotification(t('fort_retry'));
+                showNotification("↩️ Fortaleza retirada. Puedes colocarla de nuevo.");
                 renderBoard();
                 updateInventories();
                 return;
@@ -2699,7 +2154,7 @@
 
             // 2. Condición existente: Montañas
             if (reserves[p2Color]['montana'] > 0) {
-                showNotification(t('mountains_start'), true);
+                showNotification("⚠️ Debes colocar todas las MONTAÑAS en el mapa antes de empezar.", true);
                 return;
             }
 
@@ -2716,7 +2171,7 @@
 
             // 2. SEGUNDO: Notificamos SOLO si no hay una emergencia
             if (!isCheck) {
-                showNotification(t('msg_game_start', { color: t(turnColor).toUpperCase() }));
+                showNotification(`¡COMIENZA LA PARTIDA! Turno de ${turnColor.toUpperCase()}`);
             }
         }
 
@@ -2742,7 +2197,7 @@
 
             // 3. REGLA: ¿Hay equipo de rescate?
             if (rescueTeam.length < 2) {
-                showNotification(t('rescue_fail'), true);
+                showNotification("⛔ Necesitas más tropas rodeando la Fortaleza Enemiga para rescatar.", true);
                 return;
             }
 
@@ -2766,7 +2221,7 @@
             if (enemyReserveCount > 0) {
                 // --- CASO A: EL ENEMIGO TIENE RESERVAS (ASEDIO NORMAL) ---
                 /* const msg = `🚁 ¡RESCATE ÉPICO!`;
-                 showNotificat(msg); // Mensaje corto para que no solape */
+                 showNotification(msg); // Mensaje corto para que no solape */
 
                 gameState = 'siege-resolution';
                 besiegedArmy = jailerArmy;
@@ -2779,7 +2234,7 @@
                 // pero tampoco le "matamos" nada extra porque no tiene.
                 // Simplemente recuperas tus tropas y sigue tu turno (o pasa al siguiente).
 
-                showNotification(t('rescue_empty'));
+                showNotification(`🚁 ¡RESCATE ÉPICO! La fortaleza enemiga estaba vacía.`);
 
                 // El turno se mantiene en el atacante (o pasa al siguiente, según prefieras).
                 // Normalmente tras un asedio resuelto, le tocaría al atacante mover con sus nuevas tropas
@@ -2799,59 +2254,46 @@
         }
 
         function getStatusText() {
-            // A. Prioridades Absolutas (Fin de Partida)
-            if (gameState === 'game-over') {
-                if (!gameOverData) return "";
-                if (gameOverData.winner) {
-                    const armyName = t(gameOverData.winner).toUpperCase();
-                    return t('status_gameover', {
-                        reason: t(gameOverData.reason || "reason_mate"),
-                        winner: t('status_win', { army: armyName })
-                    });
-                } else {
-                    return t('status_draw');
-                }
-            }
+            // A. PRIORIDAD ABSOLUTA: Fin de juego o Inicio
+            if (gameState === 'game-over') return document.getElementById('status-bar').innerText;
+            if (gameState === 'init') return "Elige tu destino: Arrastra una Fortaleza para empezar. Mantén el ratón sobre cualquier unidad para Ayuda Visual";
 
-            // TRADUCCIÓN INICIAL
-            if (gameState === 'init') return t('init');
+            const currentArmy = getArmyName(turnColor);
 
-            // B. Preparar nombre del ejército activo
-            const rawArmy = getArmyName(turnColor);
-
-            // C. Interacción Forzada (Textos largos ahora TRADUCIDOS)
+            // B. FASES DE INTERACCIÓN FORZADA (El juego está en pausa esperando un click específico)
             if (gameState === 'siege-prisoner-select') {
-                return t('status_prisoner', { army: rawArmy });
+                return `🔓 DEFENSA FALLIDA: ${currentArmy}, ¡SELECCIONA UN PRISIONERO PARA LIBERAR!`;
             }
             if (gameState === 'siege-confirmation') {
-                return t('status_siege_ready', { army: rawArmy });
+                return `🎯 ASEDIO LISTO: ${currentArmy}, PULSA LA FORTALEZA PARA EJECUTAR O MUEVE TROPAS.`;
             }
             if (gameState === 'siege-resolution') {
-                return t('status_sacrifice', { army: rawArmy });
+                return `🔥 ¡SACRIFICIO! EL EJÉRCITO ${currentArmy} DEBE SALVAR UNA PIEZA (EL RESTO MORIRÁ).`;
             }
 
-            // D. Bonus
+            // C. BONUS DE CHUSMA (Estado especial de medio turno)
             if (gameState === 'playing-chusma-bonus') {
-                return t('status_chusma');
+                return `⚡ BONIFICACIÓN CHUSMA: Mueve otra Chusma o haz click en la misma para terminar.`;
             }
 
-            // E. Alertas
+            // D. ESTADOS DE ALERTA (Juego normal pero con peligro)
+            // 1. JAQUE (Prioridad alta)
             if (isCheck) {
-                return t('status_check', { army: rawArmy });
+                return `⚠️ ¡JAQUE AL REY ${currentArmy}! DEBES PROTEGERLO INMEDIATAMENTE. ⚠️`;
             }
+
+            // 2. ASEDIO INMINENTE (Aviso pasivo: "Te están rodeando")
             if (siegeStatus[turnColor] === true) {
-                return t('status_surrounded', { army: rawArmy });
+                return `🛡️ ¡ALERTA! LA FORTALEZA ${currentArmy} ESTÁ RODEADA. ROMPE EL CERCO O PERDERÁS TROPAS.`;
             }
 
-            // F. Estado Estándar (Fase Despliegue y Turno)
+            // E. ESTADO ESTÁNDAR (Juego normal o despliegue)
             if (gameState.includes('deploy')) {
-                const playerColor = (gameState === 'deploy-p1' ? p1Color : p2Color);
-                const pName = playerColor ? t(playerColor).toUpperCase() : '';
-                return `${t('deploy_phase')}: ${pName}`;
+                const player = (gameState === 'deploy-p1' ? p1Color : p2Color);
+                return `Fase Despliegue: ${player ? player.toUpperCase() : ''}`;
             }
 
-            // Turno Normal
-            return `${t('turn_part')} ${rawArmy}`;
+            return `Turno ${currentArmy}`;
         }
 
         // Pinta el anillo de salida de la fortaleza del ejército indicado
@@ -2899,7 +2341,7 @@
 
             // --- 1. REY ---
             if (type === 'rey') {
-                /* if (currentThreatMap && currentThreatMap[r2][c2] > 0) return false; */
+                if (currentThreatMap && currentThreatMap[r2][c2] > 0) return false;
                 return (dR <= 1 && dC <= 1) && (dR + dC > 0);
             }
             // --- 2. LANCEROS / CHUSMA ---
@@ -2918,29 +2360,15 @@
                 return true;
             }
 
-            // --- 4. ARQUEROS (REVISADO) ---
+            // --- 4. ARQUEROS (CORREGIDO: Agua bloquea el salto) ---
             if (type === 'arqueros') {
-                // Movimiento Diagonal Exclusivo
                 if (dR !== dC) return false;
-
-                // Distancia 1: Siempre posible (Mover o Capturar)
                 if (dR === 1) return true;
-
-                // Distancia 2: Habilidad "Largo Alcance"
                 if (dR === 2) {
-                    // CONDICIÓN 1: Solo sirve para CAPTURAR (debe haber alguien en destino)
-                    // Si la casilla destino está vacía, NO puede saltar.
-                    if (logicBoard[r2][c2] === null) return false;
-
-                    // CONDICIÓN 2: No puede saltar obstáculos (la casilla intermedia debe estar VACÍA)
-                    const midR = (r1 + r2) / 2;
-                    const midC = (c1 + c2) / 2;
-
-                    // Verificamos bloqueo físico (pieza) y terreno (agua)
-                    // Nota: logicBoard[midR][midC] debe ser null para que el tiro pase.
-                    const pathClear = (logicBoard[midR][midC] === null && terrain[midR][midC] !== 'water');
-
-                    return pathClear;
+                    if (logicBoard[r2][c2] === null) return false; // Solo salta para matar
+                    const midR = (r1 + r2) / 2, midC = (c1 + c2) / 2;
+                    // El agua bloquea el desplazamiento físico de la unidad
+                    return (logicBoard[midR][midC] === null && terrain[midR][midC] !== 'water');
                 }
                 return false;
             }
@@ -3101,7 +2529,7 @@
             gameState = 'playing';
             chusmaMovedCoords = null;
 
-            /* showNotificat(`Turno ${getArmyName(turnColor)}`); */
+            /* showNotification(`Turno ${getArmyName(turnColor)}`); */
 
             renderBoard();
             updateInventories();
@@ -3458,43 +2886,38 @@
             // E. RESOLUCIÓN DE PARTIDA
             if (!hasMoves) {
                 if (isCheck) {
-                    finishGame(enemy, "reason_mate");
+                    finishGame(enemy, "POR JAQUE MATE");
                 } else {
-                    finishGame(null, "reason_stalemate");
+                    finishGame(null, "TABLAS POR REY AHOGADO");
                 }
             }
         }
 
+        // Helper para terminar partida (si no la tenías ya de mis intentos anteriores)
         function finishGame(winnerArmy, reason = "") {
             gameState = 'game-over';
-
-            // Guardamos los datos para usarlos en getStatusText
-            gameOverData = {
-                winner: winnerArmy,
-                reason: reason
-            };
-
-            // Forzamos actualización inmediata usando el traductor
-            updateStatusBar();
+            const winnerText = winnerArmy ? `VICTORIA DEL EJÉRCITO ${winnerArmy.toUpperCase()}` : "EMPATE";
+            const bar = document.getElementById('status-bar');
+            bar.innerText = `🏁 FIN DE PARTIDA: ${reason}. ${winnerText}`;
+            bar.style.color = winnerArmy ? '#2ecc71' : '#fff';
+            bar.style.fontWeight = 'bold';
         }
 
         // Actualiza la barra de estado gestionando prioridades y colores
         function showNotification(msg, isError = false) {
-            // Verificar estado crítico primero
+            // SI HAY EMERGENCIA (Jaque/Asedio), NO mostramos notificaciones triviales.
+            // Forzamos updateStatusBar por si acaso, y salimos.
             if (isCheck || siegeStatus[turnColor] === true || gameState === 'siege-resolution' || gameState === 'siege-confirmation') {
                 updateStatusBar();
                 return;
             }
 
             const bar = document.getElementById('status-bar');
+
+            // 1. ACTIVAR BLOQUEO DE ESTADO
             isNotificationActive = true;
 
-            // --- MAGIA AQUÍ: TRADUCCIÓN AUTOMÁTICA ---
-            // Intentamos traducir el mensaje 'msg'. Si es un texto fijo español, lo cambiará a inglés.
-            // Si ya viene traducido (porque usamos t()), lo dejará igual.
-            bar.innerText = autoTranslate(msg);
-            // -----------------------------------------
-
+            bar.innerText = msg;
             bar.classList.remove('status-critical');
             bar.style.color = isError ? '#e74c3c' : '#f1c40f';
 
@@ -3504,8 +2927,8 @@
             if (notificationTimer) clearTimeout(notificationTimer);
 
             notificationTimer = setTimeout(() => {
-                isNotificationActive = false;
-                updateStatusBar();
+                isNotificationActive = false; // Liberar bloqueo
+                updateStatusBar();            // Restaurar estado real del juego
                 bar.style.opacity = 1;
                 notificationTimer = null;
             }, 3000);
@@ -3513,21 +2936,6 @@
 
         function updateStatusBar() {
             const bar = document.getElementById('status-bar');
-
-            // --- 0. PRIORIDAD ABSOLUTA: FIN DE PARTIDA ---
-            if (gameState === 'game-over') {
-                // Si la partida acabó, forzamos el mensaje final y el estilo de victoria
-                bar.innerText = getStatusText();
-
-                // Color: Verde si ganó alguien, Blanco si tablas
-                const color = (gameOverData && gameOverData.winner) ? '#2ecc71' : '#fff';
-
-                bar.style.color = color;
-                bar.classList.remove('status-critical'); // Quitamos la animación de alarma roja
-                bar.style.fontWeight = 'bold';
-                bar.style.opacity = 1;
-                return; // IMPORTANTE: Salimos aquí para que nadie sobrescriba esto
-            }
 
             // 1. Calculamos PRIMERO si la situación actual es CRÍTICA
             const isCritical = (
@@ -3570,19 +2978,16 @@
 
         // Traduce el color del ejército a su territorio (Norte/Sur)
         function getArmyName(armyColor) {
+            // 1. SEGURIDAD: Si es null (inicio), devolvemos cadena vacía para evitar crash
             if (!armyColor) return "";
 
-            // 1. Si aún no hay territorios definidos
-            if (!p1Territory) {
-                // Usamos la clave compuesta "DE ROJO" -> "RED ARMY"
-                const key = `DE ${armyColor.toUpperCase()}`;
-                return t(key);
-            }
+            // 2. Si aún no hay territorios definidos, devolvemos el color genérico
+            if (!p1Territory) return "DE " + armyColor.toUpperCase();
 
             const isP1 = (armyColor === p1Color);
             const isNorth = isP1 ? (p1Territory === 'north') : (p1Territory === 'south');
 
-            return isNorth ? t('north') : t('south');
+            return isNorth ? "DEL NORTE" : "DEL SUR";
         }
 
         // Ejecuta el asedio cuando no hay prisioneros que rescatar
@@ -3603,7 +3008,7 @@
             }
 
             // 2. Notificar
-            /* showNotificat("⚔️ Asedio sin prisioneros: Tropas replegadas. ¡EL ENEMIGO DEBE SACRIFICAR!"); */
+            /* showNotification("⚔️ Asedio sin prisioneros: Tropas replegadas. ¡EL ENEMIGO DEBE SACRIFICAR!"); */
 
             // 3. Activar Fase de Sacrificio (Usando tu mecánica existente en handleDrop)
             gameState = 'siege-resolution';
@@ -3634,8 +3039,8 @@
             // 2. Retirar tropas de asedio
             executeSiegeReturn(defenderArmy, attackerArmy);
 
-            // 3. INFORMAR AL JUGADOR (Con traducción)
-            showNotification(t('msg_rescued', { unit: t(prisoner.type).toUpperCase() }));
+            // 3. INFORMAR AL JUGADOR (Restauramos notificación explicativa)
+            showNotification(`🔓 ${prisoner.type.toUpperCase()} rescatado. Prisionero y tropas regresan a tu RESERVA.`);
 
             // 4. TRANSICIÓN CON PAUSA (2 segundos para leer antes de la alarma roja)
             setTimeout(() => {
@@ -3649,7 +3054,7 @@
             executeSiegeReturn(victim, attacker);
 
             // 2. INFORMAR
-            showNotification(t('siege_end'));
+            showNotification("🔄 Asedio finalizado. Tus tropas regresan a la RESERVA.");
 
             // 3. PAUSA DE LECTURA (2 segundos)
             setTimeout(() => {
@@ -3710,13 +3115,13 @@
                     }
                 }
 
-                // --- CORRECCIÓN AQUÍ: Usamos traducción ---
-                showNotification(t('no_exchange', { count: capturedCount }));
+                showNotification(`🚫 Sin intercambio: ${capturedCount} unidades capturadas en la reserva.`);
 
                 // Volver al juego
                 gameState = 'playing';
                 besiegedArmy = null;
-                // El turno se queda en el defensor para que mueva en el tablero
+                // El turno se queda en el defensor para que mueva en el tablero (o pasa, según prefieras. 
+                // Tu lógica decía "mantiene el turno en modo normal", así que no cambiamos turnColor).
                 checkTurnStatus();
 
                 renderBoard(); updateInventories(); updateDungeons();
@@ -3730,14 +3135,14 @@
                     ? `🚨 FORTALEZA CAÍDA: ${victimArmy.toUpperCase()}, salva una unidad.`
                     : `👑 ¡PELIGRO CRÍTICO! ${victimArmy.toUpperCase()}, DEBES SALVAR AL REY (El resto será capturado).`;
  
-                showNotificat(msg); */
+                showNotification(msg); */
 
                 gameState = 'siege-resolution';
                 besiegedArmy = victimArmy;
                 updateStatusBar();
             } else {
                 // CASO: NO TIENE RESERVAS (Ni para salvar ni para perder)
-                showNotification(t('fort_empty'));
+                showNotification("📭 Fortaleza vacía. Fin del asedio.");
                 gameState = 'playing';
                 besiegedArmy = null;
                 checkTurnStatus();
@@ -3756,7 +3161,7 @@
                 turnColor = attackerArmy;
                 gameState = 'siege-prisoner-select';
 
-                /* showNotificat(`⚔️ ASEDIO ÉPICO: ${attackerArmy.toUpperCase()}, elige a quién rescatar.`); */
+                /* showNotification(`⚔️ ASEDIO ÉPICO: ${attackerArmy.toUpperCase()}, elige a quién rescatar.`); */
 
                 renderBoard(); updateInventories(); updateDungeons();
                 updateStatusBar();
@@ -3844,811 +3249,160 @@
         }
 
         // Simula un movimiento para ver si deja al Rey en Jaque (Suicidio)
-        // Simula un movimiento para ver si deja al Rey en Jaque (Suicidio)
         function isSimulatedMoveSafe(pieceType, r1, c1, r2, c2, army) {
-            // 1. Identificar dónde está el Rey (Posición actual antes de mover)
-            let currentKingR, currentKingC;
-            // Buscamos al Rey en el tablero actual
+            // 1. Identificar dónde está el Rey
+            let kingR, kingC;
+
             if (pieceType === 'rey') {
-                // Optimización: Si muevo el rey, ya sé dónde está (en r1,c1)
-                currentKingR = r1; currentKingC = c1;
+                kingR = r2; kingC = c2;
             } else {
                 for (let r = 0; r < 10; r++) {
                     for (let c = 0; c < 10; c++) {
                         const p = logicBoard[r][c];
                         if (p && p.type === 'rey' && p.army === army) {
-                            currentKingR = r; currentKingC = c; break;
+                            kingR = r; kingC = c; break;
                         }
                     }
                 }
             }
 
-            // Si por algún error no hay rey, asumimos seguro
-            if (currentKingR === undefined) return true;
+            // Si no hay rey, no hay jaque (seguro)
+            if (kingR === undefined) return true;
 
             // VARIABLES PARA REVERTIR
-            // Guardamos qué había en destino y origen
+            // Usamos lógica defensiva por si r2/c2 vinieran mal
             const originalTarget = (logicBoard[r2] && logicBoard[r2][c2]) ? logicBoard[r2][c2] : null;
-            const originalSource = logicBoard[r1][c1];
-
-            // DETECTAR SI ES UN RELEVO (SWAP) VÁLIDO
-            // Condición estricta: Soy Lancero Y el destino es Aliado
-            const isRelay = (pieceType === 'lanceros' && originalTarget && originalTarget.army === army);
+            let originalSource = null;
+            let sourceCleared = false;
 
             try {
                 // 2. APLICAR MOVIMIENTO SIMULADO
-                if (isRelay) {
-                    // Intercambio REAL: El aliado (Target) va al origen (r1,c1)
-                    // El Lancero (Source) va al destino (r2,c2)
-                    logicBoard[r1][c1] = originalTarget;
+                if (r1 !== null && r1 !== undefined && c1 !== null && c1 !== undefined) {
+                    originalSource = logicBoard[r1][c1];
+
+                    // Si la casilla origen está vacía (bug raro), abortamos
+                    if (!originalSource) return true;
+
+                    logicBoard[r1][c1] = null;
+                    sourceCleared = true;
                     logicBoard[r2][c2] = originalSource;
                 } else {
-                    // Movimiento estándar: Origen vacío, destino ocupado por actor
-                    logicBoard[r1][c1] = null;
-                    logicBoard[r2][c2] = originalSource;
+                    // Caso Reserva (aunque handleDragOver ya lo filtra, lo dejamos por robustez)
+                    logicBoard[r2][c2] = { type: pieceType, army: army };
                 }
 
-                // 3. CALCULAR DÓNDE QUEDA EL REY TRAS LA SIMULACIÓN
-                let checkR = currentKingR;
-                let checkC = currentKingC;
-
-                if (pieceType === 'rey') {
-                    // A. Si moví el rey normal, ahora está en destino (r2,c2)
-                    checkR = r2; checkC = c2;
-                } else if (isRelay && originalTarget.type === 'rey') {
-                    // B. Si soy Lancero y relevo al Rey, el Rey acaba en mi origen (r1,c1)
-                    checkR = r1; checkC = c1;
-                }
-                // C. Si moví otra pieza y no toqué al Rey, checkR/checkC siguen igual
-
-                // 4. VERIFICAR AMENAZAS EN LA UBICACIÓN FINAL DEL REY
-                const attackers = getAttackers(checkR, checkC, army);
-
-                // Si hay atacantes, el movimiento es suicida (false)
+                // 3. VERIFICAR AMENAZAS
+                const attackers = getAttackers(kingR, kingC, army);
                 return (attackers.length === 0);
 
             } catch (e) {
                 console.error("Error simulación:", e);
-                return true; // Ante error, permitimos el movimiento por seguridad
+                return true; // Ante error, permitimos el movimiento
             } finally {
-                // 5. REVERTIR SIEMPRE EL TABLERO
-                logicBoard[r1][c1] = originalSource;
+                // 4. REVERTIR SIEMPRE
+                if (sourceCleared && r1 !== null && c1 !== null) {
+                    logicBoard[r1][c1] = originalSource;
+                }
                 logicBoard[r2][c2] = originalTarget;
             }
         }
 
+        // =========================================================
+        //  MODO DEBUG: DESPLIEGUE ALEATORIO AUTOMÁTICO (CORREGIDO)
+        // =========================================================
+        function activateDebugMode() {
+            if (!confirm("⚠️ ¿ACTIVAR MODO DEBUG?\nSe reiniciará la partida con despliegue aleatorio legal.")) return;
 
-        function changeLanguage(selectedLang) {
-            currentLang = selectedLang;
+            console.log("🛠️ Ejecutando Despliegue Aleatorio...");
 
-            // 1. GESTIÓN DE LAS REGLAS (HTML ESTÁTICO)
-            // Ocultamos todos los bloques de reglas
-            document.querySelectorAll('.rules-container').forEach(el => el.style.display = 'none');
+            init();
+            logicBoard = Array(10).fill().map(() => Array(10).fill(null));
+            fortressPos = { rojo: null, negro: null };
+            dungeons = { rojo: [], negro: [] };
+            shotHighlights = [];
 
-            // Mostramos el bloque del idioma seleccionado
-            const ruleBlock = document.getElementById(`rules-${currentLang}`);
-            if (ruleBlock) {
-                ruleBlock.style.display = 'block';
-            } else {
-                // Fallback: Si añadiste un idioma al selector pero no escribiste sus reglas HTML,
-                // mostramos inglés por defecto para que no quede vacío.
-                document.getElementById('rules-en').style.display = 'block';
-            }
+            p1Color = 'rojo'; p1Territory = 'north';
+            p2Color = 'negro';
 
-            // 2. ACTUALIZAR TÍTULO DEL MODAL
-            // (Idealmente esto también debería ir al diccionario, pero por ahora lo gestionamos aquí)
-            const title = document.getElementById('rules-title');
-            if (currentLang === 'es') title.innerText = '📜 REGLAMENTO';
-            else title.innerText = '📜 COTADREZ RULES';
+            // 1. COLOCAR FORTALEZAS (Reglas estrictas de bordes)
+            // Norte (Rojo): Filas permitidas para la esquina superior-izq: 1 ó 2 (para no tocar 0 ni 4)
+            // Sur (Negro): Filas permitidas: 6 ó 7 (para no tocar 5 ni 9)
+            // Columnas permitidas: 1 a 7 (para no tocar 0 ni 9 con el ancho 2)
 
-            // 3. ACTUALIZAR ETIQUETAS DINÁMICAS
-            document.querySelectorAll('.dungeon-label').forEach(el => {
-                el.innerText = t('dungeon_title');
-            });
+            const validRowsNorth = [1, 2];
+            const validRowsSouth = [6, 7];
 
-            // 4. ACTUALIZAR INTERFAZ DE JUEGO
-            updateStatusBar();
+            const placeFortress = (army, validRows) => {
+                const r = validRows[Math.floor(Math.random() * validRows.length)];
+                const c = Math.floor(Math.random() * 7) + 1; // 1 a 7
 
-            // Limpiamos tooltips antiguos para evitar mezclas
-            if (boardHelpTimer) clearTimeout(boardHelpTimer);
-        }
+                logicBoard[r][c] = { army, type: 'fortaleza' };
+                logicBoard[r][c + 1] = { army, type: 'fortaleza' };
+                logicBoard[r + 1][c] = { army, type: 'fortaleza' };
+                logicBoard[r + 1][c + 1] = { army, type: 'fortaleza' };
+                fortressPos[army] = { r, c };
+                reserves[army]['fortaleza'] = 0;
+            };
 
-        // --- MOTOR DE IA: GENERADOR DE MOVIMIENTOS ---
+            placeFortress('rojo', validRowsNorth);
+            placeFortress('negro', validRowsSouth);
 
-        function generateAllMoves(board, army, currentReserves) {
-            let allMoves = [];
-
-            // 1. Recorremos el tablero buscando piezas de 'army'
-            for (let r = 0; r < 10; r++) {
-                for (let c = 0; c < 10; c++) {
-                    const piece = board[r][c];
-                    if (!piece || piece.army !== army) continue;
-
-                    // 2. Para esta pieza, probamos los 100 destinos posibles (igual que activateBoardHelp)
-                    // (Nota: Se puede optimizar, pero para 10x10 esto es rapidísimo)
-                    for (let tr = 0; tr < 10; tr++) {
-                        for (let tc = 0; tc < 10; tc++) {
-                            if (r === tr && c === tc) continue;
-
-                            // A. Filtro Geométrico (Tu función actual)
-                            if (isValidMove(piece.type, r, c, tr, tc)) {
-
-                                // B. Filtro de Obstáculos (Copiado de activateBoardHelp)
-                                const target = board[tr][tc];
-                                const isMountain = target && target.type === 'montana';
-                                const isFortress = target && target.type === 'fortaleza';
-                                const isAlly = target && target.army === army && piece.type !== 'lanceros'; // Lanceros sí pueden
-                                const isWater = terrain[tr][tc] === 'water' && piece.type !== 'trabuquete' && piece.type !== 'escorpion' && piece.type !== 'dragon';
-
-                                if (isMountain || isFortress || isAlly || isWater) continue;
-
-                                // C. Filtro de Seguridad (Jaque)
-                                // IMPORTANTE: isSimulatedMoveSafe usa 'logicBoard' global. 
-                                // Para la IA real, habría que adaptarlo para usar el 'board' virtual que le pasamos.
-                                // Por ahora, asumimos que validamos sobre el tablero real.
-                                let isSafe = true;
-                                try {
-                                    isSafe = isSimulatedMoveSafe(piece.type, r, c, tr, tc, army);
-                                } catch (e) { }
-
-                                // D. Si pasa todo, lo guardamos en la lista
-                                if (isSafe) {
-                                    allMoves.push({
-                                        from: { r: r, c: c },
-                                        to: { r: tr, c: tc },
-                                        piece: piece.type
-                                    });
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // --- B. MOVIMIENTOS DE DESPLIEGUE (NUEVO) ---
-            // Solo si estamos jugando, no en fases raras
-            const myFortPos = fortressPos[army];
-            if (myFortPos && currentReserves) { // Verificamos que existan reservas clonadas
-
-                // 1. Identificar casillas vacías en el anillo
-                // (Reutilizamos lógica de isInExitZone optimizada)
-                const minR = Math.max(0, myFortPos.r - 1);
-                const maxR = Math.min(9, myFortPos.r + 2);
-                const minC = Math.max(0, myFortPos.c - 1);
-                const maxC = Math.min(9, myFortPos.c + 2);
-
+            // 2. COLOCAR TROPAS (Solo en Anillo de Salida)
+            const placeTroops = (army) => {
+                const fort = fortressPos[army];
+                // Identificar todas las casillas válidas del anillo
                 let validSpots = [];
-                for (let r = minR; r <= maxR; r++) {
-                    for (let c = minC; c <= maxC; c++) {
-                        // Debe ser zona de salida, estar vacía y no ser agua (salvo excepciones)
-                        if (isInExitZone(r, c, myFortPos) && board[r][c] === null && terrain[r][c] !== 'water') {
+                for (let r = 0; r < 10; r++) {
+                    for (let c = 0; c < 10; c++) {
+                        if (isInExitZone(r, c, fort) && logicBoard[r][c] === null && terrain[r][c] !== 'water') {
                             validSpots.push({ r, c });
                         }
                     }
                 }
 
-                // 2. Si hay huecos, probar a sacar cada tipo de unidad disponible
-                if (validSpots.length > 0) {
-                    for (const [type, qty] of Object.entries(currentReserves[army])) {
-                        if (type === 'montana' || type === 'fortaleza') continue; // Esos no se mueven
-                        if (qty > 0) {
-                            // Por cada hueco, generamos una opción de "SACAR TROPA"
-                            for (const spot of validSpots) {
-                                allMoves.push({
-                                    type: 'deploy', // Marcamos que es un despliegue
-                                    piece: type,
-                                    from: 'reserve',
-                                    to: { r: spot.r, c: spot.c }
-                                });
-                            }
-                        }
+                // Barajar posiciones
+                validSpots.sort(() => Math.random() - 0.5);
+
+                // Colocar unidades hasta llenar huecos o vaciar reserva
+                for (const [type, count] of Object.entries(reserves[army])) {
+                    if (type === 'montana') continue; // Las montañas van aparte
+                    let qty = count;
+                    while (qty > 0 && validSpots.length > 0) {
+                        const spot = validSpots.pop();
+                        logicBoard[spot.r][spot.c] = { army, type };
+                        reserves[army][type]--;
+                        qty--;
                     }
                 }
-            }
-
-            return allMoves;
-        }
-
-        // --- MOTOR DE IA: EVALUACIÓN DE TABLERO ---
-
-        const PIECE_VALUES = {
-            'rey': 20000,      // Si pierdes el Rey, pierdes todo. Valor infinito.
-            'dragon': 900,     // La pieza más poderosa móvil.
-            'elefante': 500,   // Tanque muy duro.
-            'c_pesada': 350,   // Caballería fuerte.
-            'c_ligera': 300,   // Caballería rápida.
-            'trabuquete': 400, // Artillería valiosa.
-            'escorpion': 400,
-            'arqueros': 200,   // Rango.
-            'lanceros': 150,   // Utilidad táctica.
-            'chusma': 100,     // Carne de cañón.
-            'fortaleza': 0,    // No se captura/mueve, no suma puntos de "material" móvil.
-            'montana': 0
-        };
-
-        function evaluateBoard(board, myArmy) {
-            let score = 0;
-            const enemyArmy = (myArmy === 'rojo') ? 'negro' : 'rojo';
-
-            for (let r = 0; r < 10; r++) {
-                for (let c = 0; c < 10; c++) {
-                    const piece = board[r][c];
-                    if (piece) {
-                        // Obtenemos el valor base de la pieza
-                        const value = PIECE_VALUES[piece.type] || 0;
-
-                        if (piece.army === myArmy) {
-                            score += value;
-
-                            // --- BONUS POSICIONALES (Heurística simple) ---
-                            // 1. Dominio del centro (Filas 3-6, Col 3-6)
-                            if (r >= 3 && r <= 6 && c >= 3 && c <= 6) {
-                                score += 10;
-                            }
-
-                            // 2. Bonus por avanzar (Si soy rojo/norte, avanzar es aumentar fila)
-                            // (Ajustar según orientación del tablero, esto es un ejemplo genérico)
-                            /* if (myArmy === 'rojo') score += r * 5; */
-
-                        } else if (piece.army === enemyArmy) {
-                            score -= value;
-
-                            // Restamos también sus bonus posicionales
-                            if (r >= 3 && r <= 6 && c >= 3 && c <= 6) {
-                                score -= 10;
-                            }
-                        }
-                    }
-                }
-            }
-            return score;
-        }
-
-        // Función auxiliar para aplicar un movimiento en la mente de la IA (sin gráficos)
-        function applyVirtualMove(board, move) {
-            // move = { from: {r,c}, to: {r,c}, piece: type }
-            const newBoard = JSON.parse(JSON.stringify(board)); // Clonamos tablero
-
-            // Ejecutamos el movimiento simple (pisar destino, limpiar origen)
-            newBoard[move.to.r][move.to.c] = newBoard[move.from.r][move.from.c];
-            newBoard[move.from.r][move.from.c] = null;
-
-            return newBoard;
-        }
-
-        function applyVirtualStateChange(board, reserves, move, army) {
-            // 1. Clonamos TODO
-            const newBoard = JSON.parse(JSON.stringify(board));
-            const newReserves = JSON.parse(JSON.stringify(reserves));
-
-            if (move.type === 'deploy') {
-                // --- EJECUTAR DESPLIEGUE ---
-                // Poner en tablero
-                newBoard[move.to.r][move.to.c] = { type: move.piece, army: army };
-                // Restar de reserva virtual
-                newReserves[army][move.piece]--;
-
-            } else {
-                // --- EJECUTAR MOVIMIENTO NORMAL ---
-                newBoard[move.to.r][move.to.c] = newBoard[move.from.r][move.from.c];
-                newBoard[move.from.r][move.from.c] = null;
-            }
-
-            return { board: newBoard, reserves: newReserves };
-        }
-
-
-        // --- MOTOR DE IA: EL CEREBRO (MINIMAX v2.0 - Con Reservas) ---
-
-        function minimax(board, reserves, depth, isMaximizing, alpha, beta, army) {
-            // 1. Caso Base
-            if (depth === 0) {
-                return evaluateBoard(board, army);
-            }
-
-            const currentArmy = isMaximizing ? army : (army === 'rojo' ? 'negro' : 'rojo');
-
-            // --- TRUCO DE MAGIA (SWAP GLOBAL) ---
-            const realBoard = logicBoard;
-            const realReserves = reserves; // No hay variable global de reservas directas, pero pasamos la virtual
-
-            // Engañamos a las validaciones globales poniendo nuestro tablero virtual
-            logicBoard = board;
-
-            // Generamos movimientos pasando TAMBIÉN las reservas actuales
-            const moves = generateAllMoves(board, currentArmy, reserves);
-
-            logicBoard = realBoard; // Restauramos la realidad
-            // ------------------------------------
-
-            if (moves.length === 0) {
-                return evaluateBoard(board, army);
-            }
-
-            if (isMaximizing) {
-                let maxEval = -Infinity;
-                for (const move of moves) {
-                    // Usamos la nueva función que devuelve {board, reserves}
-                    const nextState = applyVirtualStateChange(board, reserves, move, currentArmy);
-
-                    // Pasamos el nuevo tablero Y las nuevas reservas a la siguiente recursión
-                    const eval = minimax(nextState.board, nextState.reserves, depth - 1, false, alpha, beta, army);
-
-                    maxEval = Math.max(maxEval, eval);
-                    alpha = Math.max(alpha, eval);
-                    if (beta <= alpha) break;
-                }
-                return maxEval;
-            } else {
-                let minEval = Infinity;
-                for (const move of moves) {
-                    const nextState = applyVirtualStateChange(board, reserves, move, currentArmy);
-
-                    const eval = minimax(nextState.board, nextState.reserves, depth - 1, true, alpha, beta, army);
-
-                    minEval = Math.min(minEval, eval);
-                    beta = Math.min(beta, eval);
-                    if (beta <= alpha) break;
-                }
-                return minEval;
-            }
-        }
-
-        // --- FUNCIÓN PÚBLICA: ORDENAR A LA IA QUE JUEGUE (v2.0) ---
-        function playAITurn() {
-            if (gameState !== 'playing') {
-                console.warn("La IA no puede jugar en fase de despliegue o game-over.");
-                return;
-            }
-
-            console.log(`🤖 IA (${turnColor}) calculando con Reservas...`);
-            const startTime = Date.now();
-
-            // 1. Generar opciones iniciales (pasando las reservas REALES globales)
-            // Nota: 'reserves' es tu variable global del juego.
-            const myMoves = generateAllMoves(logicBoard, turnColor, reserves);
-
-            if (myMoves.length === 0) {
-                console.log("IA: No tengo movimientos.");
-                return;
-            }
-
-            let bestMove = null;
-            let bestValue = -Infinity;
-            const DEPTH = 3; // Profundidad de pensamiento
-
-            // 2. Evaluar cada opción
-            for (const move of myMoves) {
-                // Simular el primer paso
-                const nextState = applyVirtualStateChange(logicBoard, reserves, move, turnColor);
-
-                // Llamar a Minimax con el estado resultante
-                const boardValue = minimax(nextState.board, nextState.reserves, DEPTH - 1, false, -Infinity, Infinity, turnColor);
-
-                // console.log(`Opción: ${move.piece} (${move.type}) -> Val: ${boardValue}`);
-
-                if (boardValue > bestValue) {
-                    bestValue = boardValue;
-                    bestMove = move;
-                }
-            }
-
-            const endTime = Date.now();
-            console.log(`🤖 IA decidió en ${(endTime - startTime) / 1000}s. Valor: ${bestValue}`);
-
-            // 3. EJECUTAR LA JUGADA EN EL MUNDO REAL
-            if (bestMove) {
-                if (bestMove.type === 'deploy') {
-                    // A. EJECUTAR DESPLIEGUE (RESERVA -> TABLERO)
-                    console.log(`🤖 Acción: Desplegar ${bestMove.piece}`);
-
-                    // Simulamos evento de Drop desde la Reserva
-                    const mockEvent = {
-                        preventDefault: () => { },
-                        dataTransfer: {
-                            getData: () => JSON.stringify({
-                                source: 'reserve',
-                                army: turnColor,
-                                type: bestMove.piece,
-                                originR: null, originC: null
-                            })
-                        }
-                    };
-                    handleDrop(mockEvent, bestMove.to.r, bestMove.to.c);
-
-                } else {
-                    // B. EJECUTAR MOVIMIENTO NORMAL (TABLERO -> TABLERO)
-                    console.log(`🤖 Acción: Mover ${bestMove.piece}`);
-
-                    const mockEvent = {
-                        preventDefault: () => { },
-                        dataTransfer: {
-                            getData: () => JSON.stringify({
-                                source: 'board',
-                                army: turnColor,
-                                type: bestMove.piece,
-                                originR: bestMove.from.r,
-                                originC: bestMove.from.c
-                            })
-                        }
-                    };
-                    handleDrop(mockEvent, bestMove.to.r, bestMove.to.c);
-                }
-            }
-        }
-
-        // =================================================================
-        //  MÓDULO DE IA UNIFICADO v6.2 (Limpio y Sin Duplicados)
-        // =================================================================
-
-        // 1. HELPER: Validar Zona de Despliegue
-        function isInDeploymentZone(r, army) {
-            if (r < 0 || r > 9) return false;
-            // Rojo (Norte): Filas 0 a 4
-            if (army === 'rojo') return r <= 4;
-            // Negro (Sur): Filas 5 a 9
-            if (army === 'negro') return r >= 5;
-            return false;
-        }
-
-        // 2. HELPER: Validar Casilla para Montaña (Sustituye a la antigua isValidSpot)
-        function isValidMountainSpot(r, c) {
-            if (r < 0 || r > 9 || c < 0 || c > 9) return false;
-            if (logicBoard[r][c] !== null) return false; // Debe estar vacía
-            if (terrain[r][c] === 'water') return false; // No en agua
-            return true;
-        }
-
-        // 3. HELPER: Detectar montañas pegadas (Para evitar muros)
-        function hasAdjacentMountain(r, c) {
-            const deltas = [{ r: -1, c: 0 }, { r: 1, c: 0 }, { r: 0, c: -1 }, { r: 0, c: 1 }];
-            for (const d of deltas) {
-                const nr = r + d.r;
-                const nc = c + d.c;
-                if (nr >= 0 && nr < 10 && nc >= 0 && nc < 10) {
-                    const cell = logicBoard[nr][nc];
-                    if (cell && cell.type === 'montana') return true;
-                }
-            }
-            return false;
-        }
-
-        // =================================================================
-        //  SISTEMA DE IA v9.0: DESPLIEGUE ESTRATÉGICO (BEST FIT)
-        // =================================================================
-
-        // 1. HELPER: Calcular casillas amenazadas (Heurística de Control)
-        // Devuelve un número aproximado de casillas que la unidad controla desde (r,c)
-        function getControlScore(unitType, r, c, board, terrain) {
-            let score = 0;
-            const directions = [];
-
-            // Definimos patrones de movimiento simplificados para la evaluación
-            if (unitType === 'rey' || unitType === 'chusma' || unitType === 'lanceros' || unitType === 'elefante') {
-                // Ortogonal + Diagonal corta
-                directions.push([0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]);
-            } else if (unitType === 'arqueros' || unitType === 'escorpion') {
-                // Diagonales (Rango)
-                directions.push([1, 1], [1, -1], [-1, 1], [-1, -1]);
-            } else if (unitType === 'trabuquete') {
-                // Ortogonal (Disparo)
-                directions.push([0, 1], [0, -1], [1, 0], [-1, 0]);
-            } else if (unitType === 'c_ligera' || unitType === 'c_pesada') {
-                // Saltos de caballo (L)
-                directions.push([1, 2], [1, -2], [-1, 2], [-1, -2], [2, 1], [2, -1], [-2, 1], [-2, -1]);
-            } else if (unitType === 'dragon') {
-                // Todo
-                score = 20; // El dragón controla mucho por defecto
-                return score;
-            }
-
-            // Simulamos raycast o saltos
-            const isRanged = (unitType === 'arqueros' || unitType === 'escorpion' || unitType === 'trabuquete');
-
-            for (let d of directions) {
-                let tr = r + d[0];
-                let tc = c + d[1];
-
-                // Si es rango, iteramos (raycast corto para evaluar apertura)
-                if (isRanged) {
-                    let range = 0;
-                    while (tr >= 0 && tr < 10 && tc >= 0 && tc < 10 && range < 4) {
-                        if (board[tr][tc] && (board[tr][tc].type === 'montana' || board[tr][tc].type === 'fortaleza')) break;
-                        score++;
-                        tr += d[0];
-                        tc += d[1];
-                        range++;
-                    }
-                } else {
-                    // Movimiento simple (1 casilla o salto)
-                    if (tr >= 0 && tr < 10 && tc >= 0 && tc < 10) {
-                        // Penalizamos si caemos en agua o montaña
-                        if (terrain[tr][tc] !== 'water') {
-                            if (!board[tr][tc] || (board[tr][tc].type !== 'montana' && board[tr][tc].type !== 'fortaleza')) {
-                                score++;
-                            }
-                        }
-                    }
-                }
-            }
-            return score;
-        }
-
-        // 2. HELPER: Calcular Seguridad (Heurística de Riesgo)
-        function getSafetyScore(r, c, board, fwdVector) {
-            let safety = 0;
-            // A. ¿Cobertura? (Montaña adyacente)
-            for (let i = -1; i <= 1; i++) {
-                for (let j = -1; j <= 1; j++) {
-                    if (i === 0 && j === 0) continue;
-                    let nr = r + i, nc = c + j;
-                    if (nr >= 0 && nr < 10 && nc >= 0 && nc < 10) {
-                        if (board[nr][nc] && board[nr][nc].type === 'montana') safety += 3; // Buena cobertura
-                    }
-                }
-            }
-
-            // B. ¿Retaguardia? (Lejos del frente enemigo)
-            // Si fwd es 1 (Norte ataca Sur), las filas menores son retaguardia.
-            // Si fwd es -1 (Sur ataca Norte), las filas mayores son retaguardia.
-            // Simplificación: Estar "detrás" de la fortaleza respecto al enemigo.
-            // Esto es complejo de calcular genérico, así que usamos la "Fila" relativa.
-            return safety;
-        }
-
-        // --- GENERADOR PRINCIPAL ---
-        function generateArmyLayout(armyColor, zone) {
-            console.log(`🏭 Generando ejército ${armyColor} en zona ${zone} (Estrategia: Best Fit)...`);
-
-            // 1. PREPARAR TABLERO VIRTUAL
-            // Usamos una copia local para no ensuciar el global hasta el final
-            let localBoard = Array(10).fill().map(() => Array(10).fill(null));
-            let finalItems = [];
-
-            const isNorth = (zone === 'north');
-            const minR = isNorth ? 0 : 5;
-            const maxR = isNorth ? 4 : 9;
-            const fwd = isNorth ? 1 : -1; // Dirección hacia el enemigo
-
-            // 2. COLOCAR FORTALEZA
-            // Evitamos bordes extremos para maximizar anillo (1 a 8 en col, filas seguras)
-            const validFortRows = isNorth ? [1, 2] : [7, 8];
-            const fortR = validFortRows[Math.floor(Math.random() * validFortRows.length)];
-            const fortC = Math.floor(Math.random() * 7) + 1; // Col 1-8 (el random es 0-6 + 1 = 1-7... un poco conservador, está bien)
-            const localFortPos = { r: fortR, c: fortC };
-
-            // Renderizar Fortaleza en localBoard
-            const fortParts = [
-                { r: fortR, c: fortC }, { r: fortR, c: fortC + 1 },
-                { r: fortR + fwd, c: fortC }, { r: fortR + fwd, c: fortC + 1 }
-            ];
-            fortParts.forEach(p => {
-                localBoard[p.r][p.c] = { type: 'fortaleza', army: armyColor };
-                finalItems.push({ r: p.r, c: p.c, type: 'fortaleza', army: armyColor });
-            });
-
-            // Función para saber si es Anillo
-            const isRingSpot = (r, c) => {
-                const minFr = Math.min(fortR, fortR + fwd);
-                const maxFr = Math.max(fortR, fortR + fwd);
-                return (r >= minFr - 1 && r <= maxFr + 1 && c >= fortC - 1 && c <= fortC + 2) &&
-                    !localBoard[r][c];
             };
 
-            // B. COLOCAR MONTAÑAS (Basado en Tropas Reales - Draft Definitivo)
+            placeTroops('rojo');
+            placeTroops('negro');
 
-            // --- PASO 1: DRAFT DE TROPAS (Asignación Definitiva) ---
-            // Decidimos AHORA dónde van las tropas y "congelamos" esa decisión.
-            // Las montañas se colocarán para proteger a estas unidades específicas.
-            let draftAllocations = []; // Almacenará {r, c, type} para el paso final
-
-            // 1.1 Identificar huecos del anillo
-            let ringSlots = [];
-            for (let r = 0; r < 10; r++) {
-                for (let c = 0; c < 10; c++) {
-                    if (isRingSpot(r, c) && terrain[r][c] !== 'water') {
-                        ringSlots.push({ r, c, assigned: false });
+            // 3. COLOCAR MONTAÑAS (En cualquier lugar libre de su territorio)
+            const placeMountains = (army, minR, maxR) => {
+                let qty = reserves[army]['montana'];
+                let attempts = 0;
+                while (qty > 0 && attempts < 100) {
+                    const r = Math.floor(Math.random() * (maxR - minR + 1)) + minR;
+                    const c = Math.floor(Math.random() * 10);
+                    if (logicBoard[r][c] === null && terrain[r][c] !== 'water') {
+                        logicBoard[r][c] = { army, type: 'montana' };
+                        reserves[army]['montana']--;
+                        qty--;
                     }
+                    attempts++;
                 }
-            }
+            };
 
-            // 1.2 Preparar Pool de Unidades
-            let unitPool = [];
-            for (const [type, data] of Object.entries(CONFIG.pieces)) {
-                if (type === 'montana' || type === 'fortaleza') continue;
-                for (let i = 0; i < data.qty; i++) unitPool.push(type);
-            }
-            unitPool.sort(() => Math.random() - 0.5); // Barajar
+            placeMountains('rojo', 0, 4);
+            placeMountains('negro', 5, 9);
 
-            // 1.3 Asignar (Algoritmo Best Fit sobre tablero limpio)
-            while (ringSlots.some(s => !s.assigned) && unitPool.length > 0) {
-                let bestMatch = { score: -Infinity, slotIndex: -1, unitIndex: -1 };
-
-                for (let uIdx = 0; uIdx < unitPool.length; uIdx++) {
-                    let uType = unitPool[uIdx];
-                    for (let sIdx = 0; sIdx < ringSlots.length; sIdx++) {
-                        let slot = ringSlots[sIdx];
-                        if (slot.assigned) continue;
-
-                        let score = getControlScore(uType, slot.r, slot.c, localBoard, terrain);
-                        // Prioridades básicas
-                        if (uType === 'rey') score += 10;
-                        else if (['arqueros', 'trabuquete', 'escorpion'].includes(uType)) score += 5;
-
-                        score += Math.random();
-
-                        if (score > bestMatch.score) {
-                            bestMatch = { score: score, slotIndex: sIdx, unitIndex: uIdx };
-                        }
-                    }
-                }
-
-                if (bestMatch.slotIndex !== -1) {
-                    let slot = ringSlots[bestMatch.slotIndex];
-                    let uType = unitPool[bestMatch.unitIndex];
-                    // GUARDAMOS LA ASIGNACIÓN (No la ponemos en el tablero todavía para facilitar cálculos de montaña)
-                    draftAllocations.push({ r: slot.r, c: slot.c, type: uType });
-                    slot.assigned = true;
-                    unitPool.splice(bestMatch.unitIndex, 1);
-                } else {
-                    break;
-                }
-            }
-
-            // --- PASO 2: COLOCAR MONTAÑAS (Protegiendo el Draft) ---
-            let mountainsQty = CONFIG.pieces['montana'].qty;
-
-            for (let m = 0; m < mountainsQty; m++) {
-                let bestSpot = { r: -1, c: -1, score: -Infinity };
-
-                // Escanear territorio
-                for (let r = minR; r <= maxR; r++) {
-                    for (let c = 0; c < 10; c++) {
-                        if (localBoard[r][c] !== null) continue;
-                        if (terrain[r][c] === 'water') continue;
-                        if (isRingSpot(r, c)) continue;
-
-                        let score = 0;
-
-                        // Iteramos sobre las tropas REALES del Draft
-                        draftAllocations.forEach(unit => {
-                            // A. DEFENSA (+5): ¿Bloquea la montaña una amenaza contra ESTA unidad?
-                            // Usamos el tipo de la unidad real para ver si la montaña le sirve de escudo
-                            // (Si bloquea su salida, bloquea la entrada de una igual)
-
-                            let blocksThreat = false;
-                            const dr = Math.abs(r - unit.r);
-                            const dc = Math.abs(c - unit.c);
-                            const uType = unit.type;
-
-                            // Chequeo de intercepción según patrón de movimiento de la unidad
-                            if (uType === 'chusma' || uType === 'lanceros') {
-                                if (dr + dc === 1) blocksThreat = true;
-                            }
-                            else if (uType === 'arqueros') {
-                                if (dr === dc && dr <= 2 && dr > 0) blocksThreat = true;
-                            }
-                            else if (uType === 'c_ligera' || uType === 'c_pesada') {
-                                if ((dr === 1 && dc === 2) || (dr === 2 && dc === 1)) blocksThreat = true;
-                            }
-                            else if (uType === 'trabuquete') {
-                                if ((unit.r === r || unit.c === c) && (dr + dc > 0)) blocksThreat = true;
-                            }
-                            else if (uType === 'escorpion') {
-                                if (dr === dc && dr > 0) blocksThreat = true;
-                            }
-
-                            if (blocksThreat) score += 5;
-
-
-                            // B. OBSTRUCCIÓN (-2): ¿Cuánto control pierde ESTA unidad?
-                            let controlWithout = getControlScore(uType, unit.r, unit.c, localBoard, terrain);
-
-                            localBoard[r][c] = { type: 'montana', army: armyColor }; // Poner
-                            let controlWith = getControlScore(uType, unit.r, unit.c, localBoard, terrain);
-                            localBoard[r][c] = null; // Quitar
-
-                            let loss = controlWithout - controlWith;
-                            if (loss > 0) score -= (loss * 2);
-                        });
-
-                        // Penalización Anti-Cluster
-                        let clustering = 0;
-                        for (let i = -1; i <= 1; i++) {
-                            for (let j = -1; j <= 1; j++) {
-                                let nr = r + i, nc = c + j;
-                                if (nr >= 0 && nr < 10 && nc >= 0 && nc < 10 && localBoard[nr][nc] && localBoard[nr][nc].type === 'montana') clustering = 1;
-                            }
-                        }
-                        if (clustering) score -= 15;
-
-                        score += Math.random();
-
-                        if (score > bestSpot.score) {
-                            bestSpot = { r: r, c: c, score: score };
-                        }
-                    }
-                }
-
-                if (bestSpot.r !== -1) {
-                    localBoard[bestSpot.r][bestSpot.c] = { type: 'montana', army: armyColor };
-                    finalItems.push({ r: bestSpot.r, c: bestSpot.c, type: 'montana', army: armyColor });
-                }
-            }
-
-            // C. APLICAR DESPLIEGUE FINAL (Ejecutar Draft)
-            // Simplemente colocamos las tropas donde decidimos en el paso B
-            draftAllocations.forEach(item => {
-                localBoard[item.r][item.c] = { type: item.type, army: armyColor };
-                finalItems.push({ r: item.r, c: item.c, type: item.type, army: armyColor });
-            });
-
-            // Retorno
-            return { items: finalItems, fortPos: localFortPos };
-        }
-
-
-        // --- FUNCIÓN DE DEBUG/ACTIVACIÓN ---
-        function activateDebugMode() {
-            if (!confirm(t('debug_confirm'))) return;
-
-            console.log("🛠️ Debug: Iniciando Despliegue Inteligente...");
-
-            // 1. Reset Total
-            logicBoard = Array(10).fill().map(() => Array(10).fill(null));
-            fortressPos = { rojo: null, negro: null };
-            dungeons = { rojo: [], negro: [] };
-            shotHighlights = [];
-            currentThreatMap = null;
-
-            // Llenamos reservas al máximo inicial
-            for (const [type, data] of Object.entries(CONFIG.pieces)) {
-                reserves.rojo[type] = data.qty;
-                reserves.negro[type] = data.qty;
-            }
-
-            // Configuración
-            p1Color = 'rojo';
-            p2Color = 'negro';
-            p1Territory = 'north';
-
-            // 2. GENERAR ROJO (Norte)
-            const redLayout = generateArmyLayout('rojo', 'north');
-            fortressPos['rojo'] = redLayout.fortPos;
-
-            redLayout.items.forEach(item => {
-                logicBoard[item.r][item.c] = { type: item.type, army: item.army };
-                // IMPORTANTE: Restar de la reserva lo que hemos puesto
-                if (item.type !== 'montana') { // Las montañas no cuentan en el pool de reserva visual
-                    reserves['rojo'][item.type]--;
-                } else {
-                    reserves['rojo']['montana']--;
-                }
-            });
-
-            // 3. GENERAR NEGRO (Sur) - Niebla de Guerra simulada (Layout independiente)
-            const blackLayout = generateArmyLayout('negro', 'south');
-            fortressPos['negro'] = blackLayout.fortPos;
-
-            blackLayout.items.forEach(item => {
-                // Verificamos colisión por si acaso (aunque zonas N/S no deberían tocarse)
-                if (logicBoard[item.r][item.c] === null) {
-                    logicBoard[item.r][item.c] = { type: item.type, army: item.army };
-                    if (item.type !== 'montana') {
-                        reserves['negro'][item.type]--;
-                    } else {
-                        reserves['negro']['montana']--;
-                    }
-                } else {
-                    console.error("💥 Colisión en Debug: ", item);
-                }
-            });
-
-            // 4. Iniciar Juego
+            // Iniciar
             gameState = 'playing';
             turnColor = 'rojo';
 
-            showNotification(t('debug_active'));
+            showNotification("🛠️ MODO DEBUG: Despliegue Legal Completado");
             renderBoard();
             updateInventories();
             checkTurnStatus();

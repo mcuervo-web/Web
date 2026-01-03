@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cotadrez - Interfaz v1.1</title>
+    <style>
+        :root {
+            --c-red: #e74c3c;
+            --c-black: #7f8c8d;
+            /* Un gris más claro para el borde negro para que se vea sobre el fondo oscuro */
+            --c-board-l: #f0d9b5;
+            --c-board-d: #b58863;
+            --c-water: #3498db;
+            --c-bg: #1a252f;
+            --c-gold: #f1c40f;
+        }
+
+        body {
+            background-color: var(--c-bg);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* --- CABECERA --- */
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .game-title {
+            font-size: 3em;
+            margin: 10;
+            letter-spacing: 5px;
+            color: white;
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            font-weight: 800;
+        }
+
+        .status-bar {
+            font-size: 1.2em;
+            color: var(--c-gold);
+            margin-top: 2px;
+            font-weight: 500;
+            min-height: 1.5em;
+            /* Para que no salte si está vacío */
+        }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        .main-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            height: 80vh;
+            /* Ajuste para centrar verticalmente */
+        }
+
+        /* --- PANELES LATERALES (Inventario + Mazmorra) --- */
+        .panel {
+            width: 240px;
+            height: 600px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 3px solid #444;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            /* Para que la mazmorra no se salga de los bordes redondeados */
+        }
+
+        /* Sección Superior: Reserva (Inventario) */
+        .inventory-section {
+            flex: 1;
+            /* Ocupa el espacio restante */
+            padding: 5px;
+            overflow-y: auto;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .inv-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        /* Sección Inferior: Mazmorra */
+        .dungeon-section {
+            height: 180px;
+            /* Tamaño fijo para la mazmorra */
+            background-color: rgba(0, 0, 0, 0.4);
+            box-shadow: inset 0 10px 20px rgba(0, 0, 0, 0.5);
+            /* Efecto de profundidad */
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dungeon-label {
+            font-size: 0.8em;
+            text-align: center;
+            opacity: 0.5;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dungeon-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            align-content: flex-start;
+            overflow-y: auto;
+        }
+
+        /* Items del Inventario (Sin recuadro, icono grande) */
+        .inv-item {
+            width: 70px;
+            height: 70px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            /* Indicamos que se puede agarrar */
+        }
+
+        .inv-item img {
+            width: 100%;
+            height: 100%;
+            /* La imagen ocupa todo el hueco */
+            filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.5));
+            /* Sombra para que destaque sobre el fondo */
+            transition: transform 0.1s;
+        }
+
+        .inv-item:active img {
+            transform: scale(0.9);
+            /* Pequeño efecto al hacer clic */
+        }
+
+        /* El contador de unidades (Badge) */
+        .inv-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: var(--c-gold);
+            /* Color dorado para destacar */
+            color: #1a252f;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 20;
+        }
+
+        /* --- TABLERO --- */
+        #board {
+            display: grid;
+            grid-template-columns: repeat(10, 60px);
+            grid-template-rows: repeat(10, 60px);
+            border: 15px solid #34495e;
+            border-radius: 4px;
+            background-color: #2c3e50;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- CASILLAS --- */
+        .tile {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+            /* <--- Nivel base de apilamiento */
+            overflow: visible;
+            /* <--- Permite que las piezas sobresalgan sin cortarse */
+        }
+
+        .light {
+            background-color: var(--c-board-l);
+        }
+
+        .dark {
+            background-color: var(--c-board-d);
+        }
+
+        .water {
+            background-color: var(--c-water) !important;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.4);
+            /* Agua con más profundidad */
+        }
+
+        /* PIEZAS CUANDO ESTÁN EN EL TABLERO */
+        .piece {
+            width: 95%;
+            /* Se ajusta al 90% de los 60px de la casilla */
+            height: 95%;
+            /* Se ajusta al 90% de los 60px de la casilla */
+            z-index: 100;
+            /* <--- IMPORTANTE: Muy alto para estar siempre encima de las casillas */
+            position: relative;
+            /* Necesario para que el z-index funcione bien */
+            cursor: grab;
+            filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.6));
+            /* Sombra más pronunciada para dar altura */
+            pointer-events: auto;
+            /* Asegura que reciba los eventos del ratón */
+        }
+
+        .piece:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+        }
+
+        // Función auxiliar para mostrar mensajes temporales
+        function showNotification(msg, isError=false) {
+            const bar=document.getElementById('status-bar');
+            bar.innerText=msg;
+            bar.style.color=isError ? '#e74c3c': '#f1c40f'; // Rojo si es error, Dorado si es info
+
+            // Efecto visual: parpadeo rápido
+            bar.style.opacity=0;
+            setTimeout(()=> bar.style.opacity=1, 100);
+
+            // Volver al mensaje por defecto tras 3 segundos
+            if (isError) {
+                setTimeout(()=> {
+                        bar.innerText="Modo Dios: Arrastra libremente las piezas al tablero";
+                        bar.style.color='#f1c40f';
+                    }
+
+                    , 3000);
+            }
+        }
+
+        /* GHOSTING (Feedback Visual) */
+        .ghost-valid {
+            background-color: rgba(46, 204, 113, 0.6) !important;
+            /* Verde */
+            box-shadow: inset 0 0 0 2px #27ae60;
+        }
+
+        .ghost-invalid {
+            background-color: rgba(231, 76, 60, 0.6) !important;
+            /* Rojo */
+            box-shadow: inset 0 0 0 2px #c0392b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1 class="game-title">COTADREZ</h1>
+        <div id="status-bar" class="status-bar">Elige tu ejército y sitúa en el tablero tu fortaleza</div>
+    </header>
+
+    <div class="main-container">
+        <div class="panel" id="panel-rojo" style="border-color: var(--c-red);">
+            <div class="inventory-section">
+                <div class="inv-list" id="inv-rojo"></div>
+            </div>
+            <div class="dungeon-section">
+                <div class="dungeon-label">Mazmorra</div>
+                <div class="dungeon-list" id="grave-rojo"></div>
+            </div>
+        </div>
+
+        <div id="board"></div>
+
+        <div class="panel" id="panel-negro" style="border-color: var(--c-black);">
+            <div class="inventory-section">
+                <div class="inv-list" id="inv-negro"></div>
+            </div>
+            <div class="dungeon-section">
+                <div class="dungeon-label">Mazmorra</div>
+                <div class="dungeon-list" id="grave-negro"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. CONFIGURACIÓN Y ESTADO ---
+        const CONFIG = {
+            repo: "https://cdn.jsdelivr.net/gh/mcuervo-web/Cotadrez@main",
+            // Definición de cantidades y nombres de archivo
+            pieces: {
+                'fortaleza': { qty: 1, file: 'Castillo.svg' },
+                'montana': { qty: 3, file: 'Montana.svg' },
+                'rey': { qty: 1, file: 'Rey.svg' },
+                'chusma': { qty: 3, file: 'Chusma.svg' },
+                'lanceros': { qty: 3, file: 'Lanza.svg' },
+                'arqueros': { qty: 3, file: 'Arco.svg' },
+                'c_ligera': { qty: 3, file: 'CaballeriaL.svg' },
+                'c_pesada': { qty: 2, file: 'CaballeriaP.svg' },
+                'elefante': { qty: 2, file: 'Elefante.svg' },
+                'escorpion': { qty: 1, file: 'Escorpion.svg' },
+                'trabuquete': { qty: 1, file: 'Catapulta.svg' },
+                'dragon': { qty: 1, file: 'Dragon.svg' }
+            }
+        };
+
+        let reserves = { rojo: {}, negro: {} };
+        // Matriz para las PIEZAS (Tropas) - Nombre nuevo para evitar errores
+        let logicBoard = Array(10).fill().map(() => Array(10).fill(null));
+
+        // Matriz para el TERRENO (Agua) - Esta ya la tenías, déjala igual
+        let terrain = Array(10).fill().map(() => Array(10).fill(null));
+
+        let draggingMeta = null; // Guardará qué estamos moviendo
+
+        let fortressPos = { rojo: null, negro: null };
+
+        // Estado del juego: 'init', 'deploy-p1', 'deploy-p2', 'playing'
+        let gameState = 'init';
+        let p1Color = null;
+        let p2Color = null;
+        let p1Territory = null; // 'north' (filas 0-4) o 'south' (filas 5-9)
+
+
+        // Función auxiliar para mostrar mensajes temporales
+        function showNotification(msg, isError = false) {
+            const bar = document.getElementById('status-bar');
+            bar.innerText = msg;
+            bar.style.color = isError ? '#e74c3c' : '#f1c40f'; // Rojo si es error, Dorado si es info
+
+            // Efecto visual: parpadeo rápido
+            bar.style.opacity = 0;
+            setTimeout(() => bar.style.opacity = 1, 100);
+
+            // Volver al mensaje por defecto tras 3 segundos
+            if (isError) {
+               setTimeout(() => {
+                bar.innerText = getStatusText();
+                bar.style.color = '#f1c40f';
+            }, 3000);
+            }
+        }
+
+
+        // --- 2. INICIALIZACIÓN ---
+        function init() {
+            console.log("Inicializando sistema...");
+
+            // 1. Llenar las reservas con las cantidades iniciales
+            for (const [type, data] of Object.entries(CONFIG.pieces)) {
+                reserves.rojo[type] = data.qty;
+                reserves.negro[type] = data.qty;
+            }
+
+            // 2. Inicializar gráficos
+            initWater();
+            renderBoard();
+            updateInventories();
+            document.getElementById('status-bar').innerText = getStatusText();
+        }
+        function initWater() {
+            const waterCoords = [[3, 1], [1, 3]]; // b4, d2
+            waterCoords.forEach(([r, c]) => {
+                terrain[r][c] = 'water'; terrain[r][9 - c] = 'water';
+                terrain[9 - r][c] = 'water'; terrain[9 - r][9 - c] = 'water';
+            });
+        }
+
+        // --- 3. RENDERIZADO BÁSICO ---
+        function renderBoard() {
+            const b = document.getElementById('board');
+            b.innerHTML = '';
+
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 10; c++) {
+                    const tile = document.createElement('div');
+                    tile.className = `tile ${(r + c) % 2 === 0 ? 'light' : 'dark'}`;
+                    tile.dataset.r = r;
+                    tile.dataset.c = c;
+
+                    // --- CAMBIO 1: La casilla escucha eventos de soltar ---
+                    tile.ondragover = (e) => handleDragOver(e, r, c);
+                    tile.ondrop = (e) => handleDrop(e, r, c);
+                    // ----------------------------------------------------
+
+                    if (terrain[r][c] === 'water') {
+                        tile.classList.add('water');
+                    }
+
+                    // Pintar pieza si existe en la matriz lógica
+                    const piece = logicBoard[r][c];
+                    // --- LOGICA DE VISIBILIDAD (NIEBLA) ---
+                    let isVisible = true;
+                    // Si es turno de J2, ocultamos TODO lo de J1 (Unidades, Fortalezas y Montañas)
+                    // Añadimos 'piece &&' al principio para asegurar que hay pieza antes de mirar su color
+                    if (piece && gameState === 'deploy-p2' && piece.army === p1Color) {
+                        isVisible = false;
+                    }
+                    if (piece && isVisible) {
+                        const img = document.createElement('img');
+                        img.src = getImgUrl(piece.army, piece.type);
+                        img.className = 'piece';
+
+                        // --- LOGICA DE CAMBIO DE TURNO (CLIC EN FORTALEZA) ---
+                        if (piece.type === 'fortaleza') {
+                            // Si soy J1 y es mi turno -> Click para terminar
+                            if (gameState === 'deploy-p1' && piece.army === p1Color) {
+                                img.style.cursor = "pointer"; // Indicador visual
+                                img.title = "Click para terminar despliegue y ocultar tropas";
+                                img.onclick = () => finishTurnP1();
+                            }
+                            // Si soy J2 y es mi turno -> Click para empezar
+                            else if (gameState === 'deploy-p2' && piece.army === p2Color) {
+                                img.style.cursor = "pointer";
+                                img.title = "Click para revelar mapa y empezar";
+                                img.onclick = () => finishTurnP2();
+                            }
+                        }
+
+                        // Bloquear arrastre de piezas enemigas
+                        img.draggable = true;
+                        if (gameState.includes('deploy')) {
+                            const myColor = (gameState === 'deploy-p1') ? p1Color : p2Color;
+                            if (piece.army !== myColor) img.draggable = false;
+                        }
+
+                        img.ondragstart = (e) => handleDragStart(e, 'board', piece.army, piece.type, r, c);
+                        tile.appendChild(img);
+                    }
+                    b.appendChild(tile);
+                }
+            }
+        }
+
+
+
+        // Devuelve 'north' (filas 0-4) o 'south' (filas 5-9)
+        function getTerritory(r) {
+            return r < 5 ? 'north' : 'south';
+        }
+
+
+
+        // Verifica si una casilla está en el "Anillo de Salida" (perímetro adyacente)
+
+        function isInExitZone(r, c, fOrigin) {
+            if (!fOrigin) return false;
+
+            // La fortaleza ocupa (fr, fc) hasta (fr+1, fc+1)
+            // El anillo va desde (fr-1, fc-1) hasta (fr+2, fc+2)
+            const minR = fOrigin.r - 1;
+            const maxR = fOrigin.r + 2;
+            const minC = fOrigin.c - 1;
+            const maxC = fOrigin.c + 2;
+
+            // 1. Debe estar dentro del rectángulo exterior
+            if (r >= minR && r <= maxR && c >= minC && c <= maxC) {
+                // 2. Pero NO debe ser la propia fortaleza (el hueco central)
+                if (r >= fOrigin.r && r <= fOrigin.r + 1 && c >= fOrigin.c && c <= fOrigin.c + 1) {
+                    return false; // Es la propia estructura
+                }
+                return true; // Es el anillo
+            }
+            return false;
+        }
+
+        // Arrancar
+        init();
+
+        // Construye la URL de la imagen según el bando y el tipo
+        function getImgUrl(army, type) {
+            const folder = army === 'rojo' ? 'Rojo' : 'Negro';
+            const filename = CONFIG.pieces[type].file;
+            return `${CONFIG.repo}/${folder}/${filename}`;
+        }
+
+        // Dibuja las piezas en los paneles laterales
+        function updateInventories() {
+            ['rojo', 'negro'].forEach(army => {
+                const list = document.getElementById(`inv-${army}`);
+                list.innerHTML = '';
+
+                for (const [type, data] of Object.entries(CONFIG.pieces)) {
+                    const count = reserves[army][type];
+
+                    if (count > 0) {
+                        const item = document.createElement('div');
+                        item.className = 'inv-item';
+
+                        // --- CAMBIO AQUÍ: Hacemos la imagen arrastrable ---
+                        const img = document.createElement('img');
+                        img.src = getImgUrl(army, type);
+                        img.draggable = true; // Permite arrastrar
+
+                        // Conectamos con el handler 'reserve'
+                        img.ondragstart = (e) => handleDragStart(e, 'reserve', army, type);
+                        // ------------------------------------------------
+
+                        item.appendChild(img);
+
+                        if (count > 1) {
+                            const badge = document.createElement('div');
+                            badge.className = 'inv-badge';
+                            badge.innerText = count;
+                            item.appendChild(badge);
+                        }
+                        list.appendChild(item);
+                    }
+                }
+            });
+        }
+
+        // --- 4. LÓGICA DE ARRASTRAR Y SOLTAR ---
+
+        // 1. Al empezar a arrastrar (desde Inventario o Tablero)
+        function handleDragStart(e, source, army, type, r = null, c = null) {
+            // 1. Guardamos metadatos en variable global para el Ghosting
+            draggingMeta = { type: type, army: army };
+
+            // 2. Datos estándar para el Drop
+            const data = { source, army, type, originR: r, originC: c };
+            e.dataTransfer.setData('text/plain', JSON.stringify(data));
+            e.dataTransfer.effectAllowed = 'move';
+        }
+        // 2. Permitir soltar (El navegador bloquea por defecto, hay que prevenirlo)
+        // Función auxiliar para limpiar fantasmas previos
+        function clearGhosts() {
+            document.querySelectorAll('.ghost-valid, .ghost-invalid').forEach(el => {
+                el.classList.remove('ghost-valid', 'ghost-invalid');
+            });
+        }
+
+        // Nueva función DragOver con lógica de visualización
+
+        function handleDragOver(e, r, c) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+
+            // Seguridad: si no hay datos de arrastre, no hacemos nada
+            if (!draggingMeta) return;
+
+            // Limpiar rastros anteriores
+            clearGhosts();
+
+            // 1. DEFINICIÓN DE VARIABLES
+            let isValid = true;
+            const army = draggingMeta.army;
+            const type = draggingMeta.type;
+            const isFortress = (type === 'fortaleza');
+            const isMountain = (type === 'montana');
+
+            // Buscar posición de fortaleza
+            const fOrigin = fortressPos[army];
+            const hasFortress = fOrigin !== null;
+
+            // 2. DEFINIR LAS CELDAS AFECTADAS (Variable 'cells')
+            let cells = [];
+            if (isFortress) {
+                // Verificar límites del mapa para 2x2
+                if (r + 1 > 9 || c + 1 > 9) {
+                    // Si se sale, marcamos la casilla actual como error visual y paramos
+                    const tile = document.querySelector(`.tile[data-r="${r}"][data-c="${c}"]`);
+                    if (tile) tile.classList.add('ghost-invalid');
+                    return;
+                }
+                cells.push({ r: r, c: c }, { r: r, c: c + 1 }, { r: r + 1, c: c }, { r: r + 1, c: c + 1 });
+            } else {
+                // Unidad normal: 1x1
+                cells.push({ r: r, c: c });
+            }
+
+            // --- VALIDACIÓN DE REGLAS ---
+
+            // A. REGLA: FORTALEZA PRIMERO
+            // Si no hay fortaleza puesta y no estoy arrastrando una... ERROR
+            if (!isFortress && !hasFortress) {
+                isValid = false;
+            }
+
+            // B. REGLA: TERRITORIOS (ANTI-SONAR)
+            if (p1Territory) {
+                const rowTerritory = getTerritory(r);
+                // Si soy J1 -> Mi zona. Si soy J2 -> La contraria.
+                const myZone = (army === p1Color) ? p1Territory : (p1Territory === 'north' ? 'south' : 'north');
+
+                if (rowTerritory !== myZone) {
+                    isValid = false;
+                }
+            }
+
+            // C. REGLA: ANILLO DE SALIDA (Solo si ya hay fortaleza y no es la propia fortaleza)
+            if (!isFortress && !isMountain && hasFortress) {
+                // Si isValid ya es false (por territorio), no importa, pero si es true verificamos el anillo
+                if (isValid && !isInExitZone(r, c, fOrigin)) {
+                    isValid = false;
+                }
+            }
+
+            // D. REGLA: ZONA PROHIBIDA DE FORTALEZA (Bordes y Centro)
+            if (isFortress) {
+                const invalidRows = [0, 4, 5, 9];
+                const invalidCols = [0, 9];
+                if (invalidRows.includes(r) || invalidRows.includes(r + 1)) isValid = false;
+                if (invalidCols.includes(c) || invalidCols.includes(c + 1)) isValid = false;
+            }
+
+            // E. REGLA: AGUA Y OCUPACIÓN
+            for (let cell of cells) {
+                // Agua (salvo fortaleza)
+                if (terrain[cell.r][cell.c] === 'water' && !isFortress) isValid = false;
+                // Ocupado
+                if (logicBoard[cell.r][cell.c] !== null) isValid = false;
+            }
+
+            // 3. PINTAR EL RESULTADO
+            const className = isValid ? 'ghost-valid' : 'ghost-invalid';
+            cells.forEach(cell => {
+                const tile = document.querySelector(`.tile[data-r="${cell.r}"][data-c="${cell.c}"]`);
+                if (tile) tile.classList.add(className);
+            });
+        }
+        // 3. Al soltar en una casilla
+
+        function handleDrop(e, r, c) {
+            e.preventDefault();
+            clearGhosts();
+
+            const rawData = e.dataTransfer.getData('text/plain');
+            if (!rawData) return;
+            const data = JSON.parse(rawData);
+            draggingMeta = null;
+
+            const isFortress = (data.type === 'fortaleza');
+            const isMountain = (data.type === 'montana');
+
+            // Buscar Fortaleza existente
+            const fOrigin = fortressPos[data.army];
+            const hasFortress = fOrigin !== null;
+
+            // --- VALIDACIONES DE REGLAS ---
+
+            // 1. REGLA FORTALEZA PRIMERO (Sin excepciones)
+            if (!isFortress && !hasFortress) {
+                showNotification("🚫 Primero debes construir la FORTALEZA", true); return;
+            }
+
+            // 2. REGLA DE TERRITORIO (ANTI-SONAR)
+            if (p1Territory) {
+                const currentZone = getTerritory(r);
+                const myZone = (data.army === p1Color) ? p1Territory : (p1Territory === 'north' ? 'south' : 'north');
+
+                if (currentZone !== myZone) {
+                    showNotification("🚫 Zona Prohibida: No puedes desplegar aquí.", true); return;
+                }
+            }
+
+            // 2. SOLO EN EL ANILLO DE SALIDA (Unidades normales)
+            if (!isFortress && !isMountain && hasFortress) {
+                if (!isInExitZone(r, c, fOrigin)) {
+                    showNotification("🛡️ Las tropas deben desplegarse junto a la Fortaleza (Anillo de Salida)", true);
+                    return;
+                }
+            }
+
+            // Definir celdas afectadas para chequeo final
+            let cellsToCheck = [];
+            if (isFortress) {
+                if (r + 1 > 9 || c + 1 > 9) { showNotification("¡No cabe aquí!", true); return; }
+                cellsToCheck.push({ r: r, c: c }, { r: r, c: c + 1 }, { r: r + 1, c: c }, { r: r + 1, c: c + 1 });
+
+                // Regla de márgenes de fortaleza
+                const invalidRows = [0, 4, 5, 9];
+                const invalidCols = [0, 9];
+                if (invalidRows.includes(r) || invalidRows.includes(r + 1) ||
+                    invalidCols.includes(c) || invalidCols.includes(c + 1)) {
+                    showNotification("🏰 Posición inválida (Bordes o Centro prohibidos)", true);
+                    return;
+                }
+            } else {
+                cellsToCheck.push({ r: r, c: c });
+            }
+
+            // Chequeo final de Terreno/Ocupación
+            for (let cell of cellsToCheck) {
+                if (terrain[cell.r][cell.c] === 'water' && !isFortress) {
+                    showNotification("🌊 ¡Al agua no!", true); return;
+                }
+                if (logicBoard[cell.r][cell.c] !== null) {
+                    showNotification("⛔ Casilla ocupada", true); return;
+                }
+            }
+
+            // --- EJECUCIÓN ---
+            // --- EJECUCIÓN ---
+            if (data.source === 'reserve') {
+
+                // INICIALIZACIÓN: Definir Bando y Territorio
+                if (gameState === 'init') {
+                    if (data.type !== 'fortaleza') {
+                        showNotification("⚠️ Primero la FORTALEZA para elegir territorio.", true); return;
+                    }
+                    p1Color = data.army;
+                    p2Color = (p1Color === 'rojo') ? 'negro' : 'rojo';
+                    p1Territory = getTerritory(r); // 'north' o 'south'
+                    gameState = 'deploy-p1';
+                    showNotification(`J1 controla el ${p1Territory.toUpperCase()}.`);
+                }
+
+
+                if (reserves[data.army][data.type] > 0) {
+                    reserves[data.army][data.type]--;
+                    cellsToCheck.forEach(cell => {
+                        logicBoard[cell.r][cell.c] = { army: data.army, type: data.type };
+                    });
+
+                    // --- NUEVO: Guardar posición si es fortaleza ---
+                    if (isFortress) {
+                        fortressPos[data.army] = { r: r, c: c };
+                        showNotification("🏰 Fortaleza lista. ¡Despliega en el perímetro!");
+                    }
+                    // ----------------------------------------------
+                    else {
+                        showNotification(`Desplegado: ${data.type.toUpperCase()}`);
+                    }
+                }
+            } else if (data.source === 'board') {
+                logicBoard[data.originR][data.originC] = null;
+                logicBoard[r][c] = { army: data.army, type: data.type };
+
+                // --- NUEVO: Actualizar posición si movemos la fortaleza (Modo Dios) ---
+                if (isFortress) {
+                    fortressPos[data.army] = { r: r, c: c };
+                }
+                // ---------------------------------------------------------------------
+
+                showNotification("Unidad reubicada");
+            }
+
+            renderBoard();
+            updateInventories();
+        }
+
+        function finishTurnP1() {
+            // Acción directa, sin preguntas
+            gameState = 'deploy-p2';
+
+            // Feedback visual en la barra de notificaciones
+            showNotification(`✅ Despliegue J1 Finalizado. Turno del JUGADOR 2 (${p2Color.toUpperCase()}).`);
+
+            // Repintar (se aplicará la niebla automáticamente)
+            renderBoard();
+            updateInventories();
+        }
+
+        function finishTurnP2() {
+            // Acción directa
+            gameState = 'playing';
+
+            // Feedback visual
+            showNotification("⚔️ ¡COMIENZA LA PARTIDA! Mapa revelado.");
+
+            // Repintar (se quita la niebla)
+            renderBoard();
+            updateInventories();
+        }
+
+        // Función para obtener el texto por defecto según el estado del juego
+        function getStatusText() {
+            if (gameState === 'init') return "Elige tu destino: Arrastra una Fortaleza para empezar.";
+            if (gameState === 'deploy-p1') return `Fase Despliegue: JUGADOR 1 (${p1Color.toUpperCase()})`;
+            if (gameState === 'deploy-p2') return `Fase Despliegue: JUGADOR 2 (${p2Color.toUpperCase()})`;
+            if (gameState === 'playing') return `¡Batalla en curso! Turno de ${p1Color.toUpperCase()}`; // Asumimos que empieza J1
+            return "Cotadrez";
+        }
+
+    </script>
+</body>
+
+</html>
