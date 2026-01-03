@@ -4415,8 +4415,8 @@
             const validFortRows = isNorth ? [1, 2] : [7, 8];
             const fortR = validFortRows[Math.floor(Math.random() * validFortRows.length)];
             const fortC = Math.floor(Math.random() * 7) + 1; // Col 1-8 (el random es 0-6 + 1 = 1-7... un poco conservador, está bien)
-            const localFortPos = { r: fortR, c: fortC };
-
+            // Si fwd es -1, la fortaleza ocupa fortR y fortR-1. Debemos guardar fortR-1 como origen.
+            const localFortPos = { r: Math.min(fortR, fortR + fwd), c: fortC };
             // Renderizar Fortaleza en localBoard
             const fortParts = [
                 { r: fortR, c: fortC }, { r: fortR, c: fortC + 1 },
