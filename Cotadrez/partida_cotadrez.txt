@@ -1,0 +1,6 @@
+[Prueba]
+[J1 Negro]
+rFg2f3
+rFb2c3
+rRa2
+#

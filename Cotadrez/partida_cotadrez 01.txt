@@ -1,0 +1,21 @@
+[Evento: PoloCotarelo vs Gemini]
+[fecha 25/12/25]
+[J1 PoloCotarelo Rojo Sur]
+[J2 Gemini Negro Norte]
+rFg2h3
+rRh1
+rLg1
+rEf1
+rTi1
+rPi2
+rCi3
+rBh4
+rMh5
+rDf4
+rMf5
+rLg4
+rHf3
+rHf2
+rMd4
+>>>
+#
