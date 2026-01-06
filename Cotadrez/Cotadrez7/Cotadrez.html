@@ -2704,84 +2704,6 @@
             }
         }
 
-        function attemptRescue(jailerArmy, captiveIndex, captive) {
-            // 1. Identificar al enemigo y su fortaleza
-            const myArmy = turnColor;
-            const enemyFortPos = fortressPos[jailerArmy];
-
-            if (!enemyFortPos) return;
-
-            // 2. Buscar "El Equipo de Rescate"
-            let rescueTeam = [];
-            for (let r = 0; r < 10; r++) {
-                for (let c = 0; c < 10; c++) {
-                    const piece = logicBoard[r][c];
-                    if (piece && piece.army === myArmy) {
-                        if (isInExitZone(r, c, enemyFortPos)) {
-                            rescueTeam.push({ r, c, type: piece.type });
-                        }
-                    }
-                }
-            }
-
-            // 3. REGLA: ¿Hay equipo de rescate?
-            if (rescueTeam.length < 2) {
-                showNotification(t('rescue_fail'), true);
-                return;
-            }
-
-            // 4. EJECUTAR EL RESCATE (Todo vuelve a la reserva)
-            // A. Recuperar al prisionero
-            dungeons[jailerArmy].splice(captiveIndex, 1);
-            reserves[myArmy][captive.type]++;
-
-            // B. Retirar al equipo de rescate 
-            rescueTeam.forEach(soldier => {
-                logicBoard[soldier.r][soldier.c] = null;
-                reserves[myArmy][soldier.type]++;
-            });
-
-            // 5. VERIFICAR RESERVAS DEL ENEMIGO (SOLUCIÓN AL BLOQUEO)
-            let enemyReserveCount = 0;
-            for (const key in reserves[jailerArmy]) {
-                enemyReserveCount += reserves[jailerArmy][key];
-            }
-
-            if (enemyReserveCount > 0) {
-                // --- CASO A: EL ENEMIGO TIENE RESERVAS (ASEDIO NORMAL) ---
-                /* const msg = `🚁 ¡RESCATE ÉPICO!`;
-                 showNotificat(msg); // Mensaje corto para que no solape */
-
-                gameState = 'siege-resolution';
-                besiegedArmy = jailerArmy;
-                turnColor = besiegedArmy; // Turno para el defensor
-
-                updateStatusBar(); // Poner la barra en rojo
-            } else {
-                // --- CASO B: EL ENEMIGO NO TIENE RESERVAS (SALTAR FASE) ---
-                // Como no tiene nada en la reserva, no puede "salvar" nada, 
-                // pero tampoco le "matamos" nada extra porque no tiene.
-                // Simplemente recuperas tus tropas y sigue tu turno (o pasa al siguiente).
-
-                showNotification(t('rescue_empty'));
-
-                // El turno se mantiene en el atacante (o pasa al siguiente, según prefieras).
-                // Normalmente tras un asedio resuelto, le tocaría al atacante mover con sus nuevas tropas
-                // o pasamos turno. En la lógica actual de 'handleDrop', tras romper asedio, turnColor = attacker.
-                // Aquí ya somos el attacker.
-
-                // Opción: Mantenemos el juego fluyendo
-                gameState = 'playing';
-                // turnColor sigue siendo myArmy
-
-                checkTurnStatus(); // Actualizar amenazas tras sacar piezas del tablero
-            }
-
-            renderBoard();
-            updateInventories();
-            updateDungeons();
-        }
-
         function getStatusText() {
             // A. Prioridades Absolutas (Fin de Partida)
             if (gameState === 'game-over') {
@@ -3078,15 +3000,11 @@
             return false;
         }
 
-        function finishChusmaBonusTurn() {
-            /* isBesieged = false; // <--- AÑADE ESTA LÍNEA: Apaga la alarma anterior a la fuerza */
+        function finishChusmaBonusTurn() {   //FINALIZA EL TURNO DE LA CHUSMA
             // Cambiar turno y volver a la normalidad
             turnColor = (turnColor === 'rojo') ? 'negro' : 'rojo';
             gameState = 'playing';
             chusmaMovedCoords = null;
-
-            /* showNotificat(`Turno ${getArmyName(turnColor)}`); */
-
             renderBoard();
             updateInventories();
             checkTurnStatus();
